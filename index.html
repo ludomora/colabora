@@ -138,8 +138,8 @@
         }
         
         summary::-webkit-details-marker { display: none; }
-        summary::after { content: "Ver mais detalhes"; }
-        details[open] summary::after { content: " - Menos detalhes"; }
+        summary::after { content: "ver mais detalhes"; }
+        details[open] summary::after { content: "fechar detalhes"; }
 
         .detalhes-texto {
             margin-top: 10px;
@@ -230,7 +230,7 @@
         function carregarDados() {
             // Auto-refresh: Adiciona timestamp para evitar cache
             const timestamp = new Date().getTime();
-            const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
+            const urlSemCache = URL_DO_CSV  "&t="  timestamp;
 
             const indicadorLoading = document.querySelector('.loading');
             if(indicadorLoading) indicadorLoading.innerHTML = "⏳ Buscando atualizações...";
@@ -267,8 +267,8 @@
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, "")
                 .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w\-]+/g, '');
+                .replace(/\s/g, '-')
+                .replace(/[^\w\-]/g, '');
         }
 
         function filtrarProgramacao(diaSelecionado, botaoClicado) {
@@ -298,7 +298,7 @@
                 if (evento.Observacoes && evento.Observacoes.trim() !== "") {
                     htmlDetalhes = `
                         <details>
-                            <summary>+</summary>
+                            <summary>Clique para</summary>
                             <div class="detalhes-texto">${evento.Observacoes}</div>
                         </details>
                     `;
