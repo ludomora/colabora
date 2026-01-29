@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programação - II Encontro Nacional Rede Colabora APS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIÁVEIS DE CORES --- */
+        :root {
+            --cor-laranja: #ff6d00;
+            --cor-azul: #09747f;
+            --cor-verde: #025701;
+            --cor-fundo: #f4f4f4;
+            --cor-texto: #333;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            color: var(--cor-azul);
+            text-align: center;
+            padding: 2rem 1rem;
+            border-bottom: 4px solid var(--cor-laranja);
+        }
+
+        .logo-img {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        header h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--cor-azul); }
+        header p { margin-top: 5px; color: #666; }
+
+        /* --- NAVEGAÇÃO --- */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            background-color: var(--cor-verde);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .nav-btn.active { background-color: var(--cor-laranja); }
+
+        /* --- CONTEÚDO --- */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            min-height: 50vh;
+        }
+
+        .loading {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.2rem;
+            color: var(--cor-azul);
+        }
+
+        /* --- CARTÃO DO EVENTO --- */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-left: 5px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); }
+
+        .card-header {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-body { padding: 15px; }
+
+        .card-time { color: #555; font-weight: bold; font-size: 0.9rem; }
+        
+        .card-location {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- DETALHES (OBSERVAÇÕES) --- */
+        details {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--cor-laranja);
+            font-weight: bold;
+            font-size: 0.9rem;
+            list-style: none; /* Remove seta padrão em alguns browsers */
+        }
+        
+        /* Estilo customizado para o summary */
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: " + Ver mais detalhes"; }
+        details[open] summary::after { content: " - Menos detalhes"; }
+
+        .detalhes-texto {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fff8e1; /* Fundo levemente amarelo para destaque */
+            padding: 10px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        /* --- TAGS E CORES --- */
+        .card-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* Cores Específicas */
+        .tipo-destaque { border-color: var(--cor-laranja); }
+        .tag-destaque { background-color: var(--cor-laranja); }
+
+        .tipo-reuniao, .tipo-mesa, .tipo-plenaria { border-color: var(--cor-azul); }
+        .tag-reuniao, .tag-mesa, .tag-plenaria { background-color: var(--cor-azul); }
+
+        .tipo-intervalo { border-color: #999; }
+        .tag-intervalo { background-color: #999; }
+
+        .tipo-oficina { border-color: #d84315; }
+        .tag-oficina { background-color: #d84315; }
+
+        .tipo-cultural, .tipo-social, .tipo-interacao { border-color: var(--cor-verde); }
+        .tag-cultural, .tag-social, .tag-interacao { background-color: var(--cor-verde); }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
+        <h1>II Encontro Nacional</h1>
+        <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
+    </header>
+
+    <nav class="nav-container">
+        <button class="nav-btn active" onclick="filtrarProgramacao('Geral', this)">Programação Completa</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('24/02', this)">24/02 (Pré)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('25/02', this)">25/02 (Qua)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('26/02', this)">26/02 (Qui)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('27/02', this)">27/02 (Sex)</button>
+    </nav>
+
+    <div class="container" id="conteudo-programacao">
+        <div class="loading">⏳ Carregando programação...</div>
+    </div>
+
+    <footer>
+        <p>Programação sujeita a alterações.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <script>
+        // SEU LINK DO CSV (Lembre-se de publicar as alterações no Google Sheets)
+        const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
+        
+        // DADOS DE BACKUP ATUALIZADOS COM NOVOS HORÁRIOS E COLUNA OBSERVAÇÕES
+        const DADOS_BACKUP = [
+            {Dia: "24/02", Hora: "09h às 12h30", Atividade: "Reunião de alinhamento da Coordenação Nacional", Local: "Interno", Tipo: "Reunião", Observacoes: "Pauta interna."},
+            {Dia: "24/02", Hora: "12h30 às 14h", Atividade: "Almoço", Local: "Fiocruz - ASFOC", Tipo: "Intervalo", Observacoes: ""},
+            {Dia: "24/02", Hora: "14h às 17h", Atividade: "Reunião de alinhamento Coordenação Nacional", Local: "Interno", Tipo: "Reunião", Observacoes: ""},
+            {Dia: "25/02", Hora: "09h às 12h30", Atividade: "Plenária de acolhida e contextualização", Local: "Auditório Hotel", Tipo: "Plenária", Observacoes: "Com Coordenação Executiva e Geral."},
+            {Dia: "25/02", Hora: "12h30 às 14h", Atividade: "Almoço", Local: "Hotel", Tipo: "Intervalo", Observacoes: ""},
+            {Dia: "25/02", Hora: "14h às 17h", Atividade: "Mesa Redonda: Reconocimiento social de los sistemas de salud", Local: "Auditório Hotel", Tipo: "Mesa", Observacoes: "Título traduzido: Reconhecimento social dos sistemas de saúde baseados na APS. Palestrantes: Sergio Minué Lorenzo, Luiz Augusto Facchini."},
+            {Dia: "26/02", Hora: "09h às 12h30", Atividade: "Visita ao sistema de saúde local", Local: "Externo", Tipo: "Visita", Observacoes: "Saída do hotel às 09h pontualmente."},
+            {Dia: "26/02", Hora: "14h às 17h", Atividade: "Oficinas Temáticas Simultâneas", Local: "Salas Hotel", Tipo: "Oficina", Observacoes: "Verificar listagem na entrada."},
+            {Dia: "27/02", Hora: "09h às 12h30", Atividade: "Oficinas Temáticas (Continuação)", Local: "Salas Hotel", Tipo: "Oficina", Observacoes: ""},
+            {Dia: "27/02", Hora: "14h às 17h", Atividade: "Plenária de encerramento", Local: "Auditório", Tipo: "Encerramento", Observacoes: ""}
+        ];
+
+        let dadosDoEvento = [];
+
+        function carregarDados() {
+            Papa.parse(URL_DO_CSV, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    dadosDoEvento = results.data;
+                    filtrarProgramacao('Geral');
+                },
+                error: function(err) {
+                    console.warn("Usando backup devido a erro:", err);
+                    dadosDoEvento = DADOS_BACKUP;
+                    filtrarProgramacao('Geral');
+                    document.querySelector('footer p').innerHTML += " <br><span style='color:orange'>(Modo Offline)</span>";
+                }
+            });
+        }
+
+        function normalizarTipo(tipo) {
+            if (!tipo) return "padrao";
+            return tipo.split(' ')[0].normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        function filtrarProgramacao(diaSelecionado, botaoClicado) {
+            const container = document.getElementById('conteudo-programacao');
+            
+            if(botaoClicado) {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                botaoClicado.classList.add('active');
+            }
+
+            container.innerHTML = "";
+            
+            // FILTRO: Se for 'Geral', retorna TUDO. Se não, filtra pelo dia.
+            const eventosFiltrados = dadosDoEvento.filter(item => {
+                if (diaSelecionado === 'Geral') return true; // Mostra tudo
+                return item.Dia && item.Dia.includes(diaSelecionado);
+            });
+
+            if (eventosFiltrados.length === 0) {
+                container.innerHTML = "<p style='text-align:center; margin-top:30px; color:#666'>Sem programação para este dia.</p>";
+                return;
+            }
+
+            eventosFiltrados.forEach(evento => {
+                const classeTipo = normalizarTipo(evento.Tipo);
+                
+                // LÓGICA DE DETALHES: Só cria o bloco <details> se houver texto em Observacoes
+                let htmlDetalhes = "";
+                if (evento.Observacoes && evento.Observacoes.trim() !== "") {
+                    htmlDetalhes = `
+                        <details>
+                            <summary>Ver detalhes</summary>
+                            <div class="detalhes-texto">
+                                ${evento.Observacoes}
+                            </div>
+                        </details>
+                    `;
+                }
+
+                // Se estamos na aba Geral, é bom mostrar o dia no card para não confundir
+                let htmlDia = "";
+                if (diaSelecionado === 'Geral') {
+                    htmlDia = `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px; color:#333;">📅 ${evento.Dia}</span>`;
+                }
+
+                const cartao = `
+                    <div class="card tipo-${classeTipo}">
+                        <div class="card-header">
+                            <div>
+                                ${htmlDia}
+                                <span class="card-time">⏰ ${evento.Hora}</span>
+                            </div>
+                            <span class="card-tag tag-${classeTipo}">${evento.Tipo}</span>
+                        </div>
+                        <div class="card-body">
+                            <h3 style="margin: 0 0 5px 0; color: var(--cor-azul)">${evento.Atividade}</h3>
+                            <span class="card-location">📍 ${evento.Local}</span>
+                            ${htmlDetalhes}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cartao;
+            });
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
