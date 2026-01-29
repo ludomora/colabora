@@ -249,118 +249,12 @@
         
         let dadosDoEvento = [];
 
+        // Função principal para baixar os dados
         function carregarDados() {
-            // Feedback visual no botão
             const btn = document.querySelector('.btn-update');
             if(btn) btn.innerText = "⏳ Atualizando...";
 
-            // Timestamp para forçar o navegador a baixar dados novos
             const timestamp = new Date().getTime();
             const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
-            Papa.parse(urlSemCache, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    dadosDoEvento = results.data;
-                    
-                    // Descobre qual aba está aberta para recarregar ela
-                    const botaoAtivo = document.querySelector('.nav-btn.active');
-                    const diaAtivo = botaoAtivo ? (
-                        botaoAtivo.innerText.includes('25') ? '25/02' :
-                        botaoAtivo.innerText.includes('26') ? '26/02' :
-                        botaoAtivo.innerText.includes('27') ? '27/02' : 'Geral'
-                    ) : 'Geral';
-                    
-                    filtrarProgramacao(diaAtivo);
-                    
-                    if(btn) btn.innerText = "✅ Atualizado!";
-                    setTimeout(() => { if(btn) btn.innerText = "🔄 Checar atualizações"; }, 2000);
-                },
-                error: function(err) {
-                    console.error("Erro:", err);
-                    if(btn) btn.innerText = "❌ Erro ao atualizar";
-                    document.getElementById('conteudo-programacao').innerHTML = 
-                        "<p style='text-align:center; color:red; margin-top:30px;'>Erro de conexão. Tente novamente.</p>";
-                }
-            });
-        }
-
-        function normalizarTipo(tipo) {
-            if (!tipo) return "padrao";
-            return tipo
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w\-]+/g, '');
-        }
-
-        function filtrarProgramacao(diaSelecionado, botaoClicado) {
-            const container = document.getElementById('conteudo-programacao');
-            
-            if(botaoClicado) {
-                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-                botaoClicado.classList.add('active');
-            }
-
-            container.innerHTML = "";
-            
-            const eventosFiltrados = dadosDoEvento.filter(item => {
-                if (diaSelecionado === 'Geral') return true; 
-                return item.Dia && item.Dia.includes(diaSelecionado);
-            });
-
-            if (eventosFiltrados.length === 0) {
-                container.innerHTML = "<p style='text-align:center; margin-top:30px; color:#666'>Sem programação para este dia.</p>";
-                return;
-            }
-
-            eventosFiltrados.forEach(evento => {
-                const classeTipo = normalizarTipo(evento.Tipo);
-                
-                let htmlDetalhes = "";
-                if (evento.Observacoes && evento.Observacoes.trim() !== "") {
-                    htmlDetalhes = `
-                        <details>
-                            <summary>Ver </summary>
-                            <div class="detalhes-texto">${evento.Observacoes}</div>
-                        </details>
-                    `;
-                }
-
-                let htmlDia = "";
-                if (diaSelecionado === 'Geral') {
-                    htmlDia = `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px; color:#333;">📅 ${evento.Dia}</span>`;
-                }
-
-                const cartao = `
-                    <div class="card tipo-${classeTipo}">
-                        <div class="card-header">
-                            <div>
-                                ${htmlDia}
-                                <span class="card-time">⏰ ${evento.Hora}</span>
-                            </div>
-                            <span class="card-tag tag-${classeTipo}">${evento.Tipo}</span>
-                        </div>
-                        <div class="card-body">
-                            <h3 style="margin: 0 0 5px 0; color: var(--cor-azul)">${evento.Atividade}</h3>
-                            <span class="card-location">📍 ${evento.Local}</span>
-                            ${htmlDetalhes}
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += cartao;
-            });
-        }
-
-        // Carrega ao abrir
-        carregarDados();
-        
-        // Tenta atualizar sozinho a cada 2 minutos
-        setInterval(carregarDados, 120000);
-
-    </script>
-</body>
-</html>
+            // MUDANÇA IMPORTANTE: Usamos 'fetch' com
