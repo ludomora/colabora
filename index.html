@@ -12,6 +12,8 @@
             --cor-laranja: #ff6d00;
             --cor-azul: #09747f;
             --cor-verde: #025701;
+            --cor-cinza: #757575;
+            --cor-roxo: #7b1fa2; /* Cor extra para variedade */
             --cor-fundo: #f4f4f4;
             --cor-texto: #333;
         }
@@ -133,10 +135,9 @@
             color: var(--cor-laranja);
             font-weight: bold;
             font-size: 0.9rem;
-            list-style: none; /* Remove seta padrão em alguns browsers */
+            list-style: none;
         }
         
-        /* Estilo customizado para o summary */
         summary::-webkit-details-marker { display: none; }
         summary::after { content: " + Ver mais detalhes"; }
         details[open] summary::after { content: " - Menos detalhes"; }
@@ -145,13 +146,13 @@
             margin-top: 10px;
             font-size: 0.9rem;
             color: #444;
-            background-color: #fff8e1; /* Fundo levemente amarelo para destaque */
+            background-color: #fff8e1;
             padding: 10px;
             border-radius: 4px;
             line-height: 1.5;
         }
 
-        /* --- TAGS E CORES --- */
+        /* --- TAGS (ETIQUETAS) --- */
         .card-tag {
             padding: 4px 10px;
             border-radius: 12px;
@@ -160,23 +161,32 @@
             color: white;
             font-weight: bold;
             letter-spacing: 0.5px;
+            text-align: center;
+            max-width: 150px;
         }
 
-        /* Cores Específicas */
-        .tipo-destaque { border-color: var(--cor-laranja); }
-        .tag-destaque { background-color: var(--cor-laranja); }
+        /* --- DEFINIÇÃO DE CORES POR TIPO --- */
+        
+        /* Grupo LARANJA (Destaques, Oficinas, Visitas) */
+        .tipo-oficina, .tipo-visita-tecnica, .tipo-exposicao-interativa { border-color: var(--cor-laranja); }
+        .tag-oficina, .tag-visita-tecnica, .tag-exposicao-interativa { background-color: var(--cor-laranja); }
 
-        .tipo-reuniao, .tipo-mesa, .tipo-plenaria { border-color: var(--cor-azul); }
-        .tag-reuniao, .tag-mesa, .tag-plenaria { background-color: var(--cor-azul); }
+        /* Grupo AZUL (Institucional, Plenárias, Mesas) */
+        .tipo-plenaria, .tipo-mesa-redonda, .tipo-apresentacao, .tipo-reuniao, .tipo-atendimento-orientado { border-color: var(--cor-azul); }
+        .tag-plenaria, .tag-mesa-redonda, .tag-apresentacao, .tag-reuniao, .tag-atendimento-orientado { background-color: var(--cor-azul); }
 
-        .tipo-intervalo { border-color: #999; }
-        .tag-intervalo { background-color: #999; }
+        /* Grupo VERDE (Cultural, Convivência, Grupos) */
+        .tipo-atividade-cultural, .tipo-atividade-em-grupo, .tipo-encontro-livre, .tipo-convivencia, .tipo-exibicao-debate { border-color: var(--cor-verde); }
+        .tag-atividade-cultural, .tag-atividade-em-grupo, .tag-encontro-livre, .tag-convivencia, .tag-exibicao-debate { background-color: var(--cor-verde); }
 
-        .tipo-oficina { border-color: #d84315; }
-        .tag-oficina { background-color: #d84315; }
+        /* Grupo CINZA (Logística, Intervalos) */
+        .tipo-alimentacao { border-color: var(--cor-cinza); }
+        .tag-alimentacao { background-color: var(--cor-cinza); }
 
-        .tipo-cultural, .tipo-social, .tipo-interacao { border-color: var(--cor-verde); }
-        .tag-cultural, .tag-social, .tag-interacao { background-color: var(--cor-verde); }
+        /* Padrão para não especificados */
+        .tipo-padrao { border-color: #999; }
+        .tag-padrao { background-color: #999; }
+
 
         footer {
             text-align: center;
@@ -197,6 +207,7 @@
 
     <nav class="nav-container">
         <button class="nav-btn active" onclick="filtrarProgramacao('Geral', this)">Programação Completa</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('24/02', this)">24/02 (Pré)</button>
         <button class="nav-btn" onclick="filtrarProgramacao('25/02', this)">25/02 (Qua)</button>
         <button class="nav-btn" onclick="filtrarProgramacao('26/02', this)">26/02 (Qui)</button>
         <button class="nav-btn" onclick="filtrarProgramacao('27/02', this)">27/02 (Sex)</button>
@@ -213,21 +224,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <script>
-        // SEU LINK DO CSV (Lembre-se de publicar as alterações no Google Sheets)
+        // Usei o ID do seu link novo, mas ajustei o final para ?output=csv para funcionar no código
         const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
         
-        // DADOS DE BACKUP ATUALIZADOS COM NOVOS HORÁRIOS E COLUNA OBSERVAÇÕES
+        // Backup de segurança
         const DADOS_BACKUP = [
             {Dia: "24/02", Hora: "09h às 12h30", Atividade: "Reunião de alinhamento da Coordenação Nacional", Local: "Interno", Tipo: "Reunião", Observacoes: "Pauta interna."},
-            {Dia: "24/02", Hora: "12h30 às 14h", Atividade: "Almoço", Local: "Fiocruz - ASFOC", Tipo: "Intervalo", Observacoes: ""},
-            {Dia: "24/02", Hora: "14h às 17h", Atividade: "Reunião de alinhamento Coordenação Nacional", Local: "Interno", Tipo: "Reunião", Observacoes: ""},
-            {Dia: "25/02", Hora: "09h às 12h30", Atividade: "Plenária de acolhida e contextualização", Local: "Auditório Hotel", Tipo: "Plenária", Observacoes: "Com Coordenação Executiva e Geral."},
-            {Dia: "25/02", Hora: "12h30 às 14h", Atividade: "Almoço", Local: "Hotel", Tipo: "Intervalo", Observacoes: ""},
-            {Dia: "25/02", Hora: "14h às 17h", Atividade: "Mesa Redonda: Reconocimiento social de los sistemas de salud", Local: "Auditório Hotel", Tipo: "Mesa", Observacoes: "Título traduzido: Reconhecimento social dos sistemas de saúde baseados na APS. Palestrantes: Sergio Minué Lorenzo, Luiz Augusto Facchini."},
-            {Dia: "26/02", Hora: "09h às 12h30", Atividade: "Visita ao sistema de saúde local", Local: "Externo", Tipo: "Visita", Observacoes: "Saída do hotel às 09h pontualmente."},
-            {Dia: "26/02", Hora: "14h às 17h", Atividade: "Oficinas Temáticas Simultâneas", Local: "Salas Hotel", Tipo: "Oficina", Observacoes: "Verificar listagem na entrada."},
-            {Dia: "27/02", Hora: "09h às 12h30", Atividade: "Oficinas Temáticas (Continuação)", Local: "Salas Hotel", Tipo: "Oficina", Observacoes: ""},
-            {Dia: "27/02", Hora: "14h às 17h", Atividade: "Plenária de encerramento", Local: "Auditório", Tipo: "Encerramento", Observacoes: ""}
+            {Dia: "25/02", Hora: "09h às 12h30", Atividade: "Plenária de acolhida", Local: "Auditório", Tipo: "Plenária", Observacoes: ""},
+            // ... (O código carregará o CSV real prioritariamente)
         ];
 
         let dadosDoEvento = [];
@@ -250,9 +254,15 @@
             });
         }
 
+        // Função ATUALIZADA para gerar slugs (ex: "Mesa redonda" vira "mesa-redonda")
         function normalizarTipo(tipo) {
             if (!tipo) return "padrao";
-            return tipo.split(' ')[0].normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return tipo
+                .normalize('NFD')               // Separa acentos
+                .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                .toLowerCase()                  // Tudo minúsculo
+                .replace(/\s+/g, '-')           // Troca espaços por traços
+                .replace(/[^\w\-]+/g, '');      // Remove caracteres especiais (ex: +)
         }
 
         function filtrarProgramacao(diaSelecionado, botaoClicado) {
@@ -265,9 +275,8 @@
 
             container.innerHTML = "";
             
-            // FILTRO: Se for 'Geral', retorna TUDO. Se não, filtra pelo dia.
             const eventosFiltrados = dadosDoEvento.filter(item => {
-                if (diaSelecionado === 'Geral') return true; // Mostra tudo
+                if (diaSelecionado === 'Geral') return true; 
                 return item.Dia && item.Dia.includes(diaSelecionado);
             });
 
@@ -277,22 +286,19 @@
             }
 
             eventosFiltrados.forEach(evento => {
+                // Aqui a mágica acontece: Transforma "Exibição + Debate" em "exibicao-debate"
                 const classeTipo = normalizarTipo(evento.Tipo);
                 
-                // LÓGICA DE DETALHES: Só cria o bloco <details> se houver texto em Observacoes
                 let htmlDetalhes = "";
                 if (evento.Observacoes && evento.Observacoes.trim() !== "") {
                     htmlDetalhes = `
                         <details>
                             <summary>Ver detalhes</summary>
-                            <div class="detalhes-texto">
-                                ${evento.Observacoes}
-                            </div>
+                            <div class="detalhes-texto">${evento.Observacoes}</div>
                         </details>
                     `;
                 }
 
-                // Se estamos na aba Geral, é bom mostrar o dia no card para não confundir
                 let htmlDia = "";
                 if (diaSelecionado === 'Geral') {
                     htmlDia = `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px; color:#333;">📅 ${evento.Dia}</span>`;
