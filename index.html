@@ -249,12 +249,54 @@
         
         let dadosDoEvento = [];
 
-        // Função principal para baixar os dados
         function carregarDados() {
             const btn = document.querySelector('.btn-update');
             if(btn) btn.innerText = "⏳ Atualizando...";
 
+            // O TRUQUE DO RELÓGIO (Simples e Seguro)
+            // Adiciona &t=123456... ao link. O navegador vê como um link novo e baixa de novo.
+            // O Papa.parse nativo (download: true) lida melhor com conexões do que o 'fetch' manual.
             const timestamp = new Date().getTime();
             const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
-            // MUDANÇA IMPORTANTE: Usamos 'fetch' com
+            Papa.parse(urlSemCache, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    dadosDoEvento = results.data;
+                    console.log("Sucesso! Itens carregados:", dadosDoEvento.length);
+                    
+                    // Descobre qual aba está aberta
+                    const botaoAtivo = document.querySelector('.nav-btn.active');
+                    const diaAtivo = botaoAtivo ? (
+                        botaoAtivo.innerText.includes('25') ? '25/02' :
+                        botaoAtivo.innerText.includes('26') ? '26/02' :
+                        botaoAtivo.innerText.includes('27') ? '27/02' : 'Geral'
+                    ) : 'Geral';
+                    
+                    filtrarProgramacao(diaAtivo);
+                    
+                    if(btn) btn.innerText = "✅ Atualizado!";
+                    setTimeout(() => { if(btn) btn.innerText = "🔄 Checar atualizações"; }, 2000);
+                },
+                error: function(err) {
+                    console.error("Erro PapaParse:", err);
+                    if(btn) btn.innerText = "❌ Erro ao atualizar";
+                    document.getElementById('conteudo-programacao').innerHTML = 
+                        "<p style='text-align:center; color:red; margin-top:30px;'>Não foi possível carregar a planilha.<br>Verifique sua conexão.</p>";
+                }
+            });
+        }
+
+        function normalizarTipo(tipo) {
+            if (!tipo) return "padrao";
+            return tipo
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '');
+        }
+
+        function
