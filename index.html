@@ -1,22 +1,235 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programação - II Encontro Nacional Rede Colabora APS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIÁVEIS DE CORES --- */
+        :root {
+            --cor-laranja: #ff6d00;
+            --cor-azul: #09747f;
+            --cor-verde: #025701;
+            --cor-cinza: #757575;
+            --cor-fundo: #f4f4f4;
+            --cor-texto: #333;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            color: var(--cor-azul);
+            text-align: center;
+            padding: 2rem 1rem;
+            border-bottom: 4px solid var(--cor-laranja);
+        }
+
+        .logo-img {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        header h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--cor-azul); }
+        header p { margin-top: 5px; color: #666; }
+
+        /* --- NAVEGAÇÃO --- */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            background-color: var(--cor-verde);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .nav-btn.active { background-color: var(--cor-laranja); }
+
+        /* --- CONTEÚDO --- */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            min-height: 50vh;
+        }
+
+        .loading {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 1.2rem;
+            color: var(--cor-azul);
+        }
+
+        /* --- CARTÃO DO EVENTO --- */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-left: 5px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-2px); }
+
+        .card-header {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .card-body { padding: 15px; }
+
+        .card-time { color: #555; font-weight: bold; font-size: 0.9rem; }
+        
+        .card-location {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- DETALHES (OBSERVAÇÕES) --- */
+        details {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--cor-laranja);
+            font-weight: bold;
+            font-size: 0.9rem;
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: " + Ver mais detalhes"; }
+        details[open] summary::after { content: " - Menos detalhes"; }
+
+        .detalhes-texto {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fff8e1;
+            padding: 10px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
+
+        /* --- TAGS (ETIQUETAS) --- */
+        .card-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: white;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-align: center;
+            max-width: 150px;
+        }
+
+        /* --- CORES DAS ETIQUETAS --- */
+        
+        /* Grupo LARANJA */
+        .tipo-oficina, .tipo-visita-tecnica, .tipo-exposicao-interativa { border-color: var(--cor-laranja); }
+        .tag-oficina, .tag-visita-tecnica, .tag-exposicao-interativa { background-color: var(--cor-laranja); }
+
+        /* Grupo AZUL */
+        .tipo-plenaria, .tipo-mesa-redonda, .tipo-apresentacao, .tipo-reuniao, .tipo-atendimento-orientado { border-color: var(--cor-azul); }
+        .tag-plenaria, .tag-mesa-redonda, .tag-apresentacao, .tag-reuniao, .tag-atendimento-orientado { background-color: var(--cor-azul); }
+
+        /* Grupo VERDE */
+        .tipo-atividade-cultural, .tipo-atividade-em-grupo, .tipo-encontro-livre, .tipo-convivencia, .tipo-exibicao-debate { border-color: var(--cor-verde); }
+        .tag-atividade-cultural, .tag-atividade-em-grupo, .tag-encontro-livre, .tag-convivencia, .tag-exibicao-debate { background-color: var(--cor-verde); }
+
+        /* Grupo CINZA */
+        .tipo-alimentacao { border-color: var(--cor-cinza); }
+        .tag-alimentacao { background-color: var(--cor-cinza); }
+
+        /* Padrão */
+        .tipo-padrao { border-color: #999; }
+        .tag-padrao { background-color: #999; }
+
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
+        <h1>II Encontro Nacional</h1>
+        <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
+    </header>
+
+    <nav class="nav-container">
+        <button class="nav-btn active" onclick="filtrarProgramacao('Geral', this)">Programação Completa</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('25/02', this)">25/02 (Qua)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('26/02', this)">26/02 (Qui)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('27/02', this)">27/02 (Sex)</button>
+    </nav>
+
+    <div class="container" id="conteudo-programacao">
+        <div class="loading">⏳ Carregando programação...</div>
+    </div>
+
+    <footer>
+        <p>Programação sujeita a alterações.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <script>
         // SEU LINK DO CSV
         const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
         
-        // BACKUP DE SEGURANÇA
-        const DADOS_BACKUP = [
-            {Dia: "24/02", Hora: "09h às 12h30", Atividade: "Reunião de alinhamento da Coordenação Nacional", Local: "Interno", Tipo: "Reunião", Observacoes: "Pauta interna."},
-            {Dia: "25/02", Hora: "09h às 12h30", Atividade: "Plenária de acolhida", Local: "Auditório", Tipo: "Plenária", Observacoes: ""}
-        ];
-
         let dadosDoEvento = [];
 
         function carregarDados() {
-            // --- O TRUQUE DO AUTO-REFRESH ---
-            // Criamos um número baseado no horário atual (milissegundos)
+            // Auto-refresh: Adiciona timestamp para evitar cache
             const timestamp = new Date().getTime();
-            // Adicionamos esse número ao final do link. O Google ignora, mas o navegador acha que é um link novo!
             const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
             const indicadorLoading = document.querySelector('.loading');
@@ -27,28 +240,27 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    console.log("Dados atualizados baixados com sucesso!");
                     dadosDoEvento = results.data;
                     
-                    // Verifica qual aba está ativa para manter o usuário nela
+                    // Mantém a aba ativa após o refresh
                     const botaoAtivo = document.querySelector('.nav-btn.active');
-                    const diaAtivo = botaoAtivo ? botaoAtivo.innerText.includes('24') ? '24/02' : 
-                                                  botaoAtivo.innerText.includes('25') ? '25/02' :
-                                                  botaoAtivo.innerText.includes('26') ? '26/02' :
-                                                  botaoAtivo.innerText.includes('27') ? '27/02' : 'Geral' : 'Geral';
+                    const diaAtivo = botaoAtivo ? (
+                        botaoAtivo.innerText.includes('25') ? '25/02' :
+                        botaoAtivo.innerText.includes('26') ? '26/02' :
+                        botaoAtivo.innerText.includes('27') ? '27/02' : 'Geral'
+                    ) : 'Geral';
                     
                     filtrarProgramacao(diaAtivo);
                 },
                 error: function(err) {
-                    console.warn("Erro ao buscar dados novos. Usando backup.", err);
-                    dadosDoEvento = DADOS_BACKUP;
-                    filtrarProgramacao('Geral');
-                    document.querySelector('footer p').innerHTML += " <br><span style='color:orange'>(Modo Offline)</span>";
+                    console.error("Erro ao carregar:", err);
+                    document.getElementById('conteudo-programacao').innerHTML = 
+                        "<p style='text-align:center; color:red; margin-top:30px;'>Erro ao carregar a programação. Verifique sua conexão.</p>";
                 }
             });
         }
 
-        // Função de normalização de texto (slugs)
+        // Função para normalizar slugs (ex: "Mesa redonda" -> "mesa-redonda")
         function normalizarTipo(tipo) {
             if (!tipo) return "padrao";
             return tipo
@@ -117,10 +329,12 @@
             });
         }
 
-        // Inicia o carregamento
+        // Inicia carregamento
         carregarDados();
-
-        // Opcional: Verifica se há dados novos automaticamente a cada 5 minutos (300000 ms) sem precisar recarregar a página
+        
+        // Verifica atualizações a cada 5 minutos
         setInterval(carregarDados, 300000);
 
     </script>
+</body>
+</html>
