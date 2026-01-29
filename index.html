@@ -32,6 +32,7 @@
             text-align: center;
             padding: 2rem 1rem;
             border-bottom: 4px solid var(--cor-laranja);
+            position: relative;
         }
 
         .logo-img {
@@ -42,6 +43,29 @@
 
         header h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--cor-azul); }
         header p { margin-top: 5px; color: #666; }
+
+        /* Botão de Atualizar */
+        .btn-update {
+            background-color: transparent;
+            border: 1px solid var(--cor-azul);
+            color: var(--cor-azul);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 15px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-update:hover {
+            background-color: var(--cor-azul);
+            color: white;
+        }
+        .btn-update:active {
+            transform: scale(0.95);
+        }
 
         /* --- NAVEGAÇÃO --- */
         .nav-container {
@@ -122,7 +146,7 @@
             gap: 5px;
         }
 
-        /* --- DETALHES (OBSERVAÇÕES) --- */
+        /* --- DETALHES --- */
         details {
             margin-top: 15px;
             border-top: 1px solid #eee;
@@ -138,8 +162,8 @@
         }
         
         summary::-webkit-details-marker { display: none; }
-        summary::after { content: "ver mais detalhes"; }
-        details[open] summary::after { content: "fechar detalhes"; }
+        summary::after { content: "mais detalhes"; }
+        details[open] summary::after { content: "menos detalhes"; }
 
         .detalhes-texto {
             margin-top: 10px;
@@ -151,7 +175,7 @@
             line-height: 1.5;
         }
 
-        /* --- TAGS (ETIQUETAS) --- */
+        /* --- TAGS --- */
         .card-tag {
             padding: 4px 10px;
             border-radius: 12px;
@@ -164,8 +188,7 @@
             max-width: 150px;
         }
 
-        /* --- CORES DAS ETIQUETAS --- */
-        
+        /* --- CORES --- */
         /* Grupo LARANJA */
         .tipo-oficina, .tipo-visita-tecnica, .tipo-exposicao-interativa { border-color: var(--cor-laranja); }
         .tag-oficina, .tag-visita-tecnica, .tag-exposicao-interativa { background-color: var(--cor-laranja); }
@@ -186,7 +209,6 @@
         .tipo-padrao { border-color: #999; }
         .tag-padrao { background-color: #999; }
 
-
         footer {
             text-align: center;
             padding: 20px;
@@ -202,6 +224,7 @@
         <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
         <h1>II Encontro Nacional</h1>
         <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
+        <button onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
     </header>
 
     <nav class="nav-container">
@@ -222,18 +245,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
     <script>
-        // SEU LINK DO CSV
         const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
         
         let dadosDoEvento = [];
 
         function carregarDados() {
-            // Auto-refresh: Adiciona timestamp para evitar cache
-            const timestamp = new Date().getTime();
-            const urlSemCache = URL_DO_CSV  "&t="  timestamp;
+            // Feedback visual no botão
+            const btn = document.querySelector('.btn-update');
+            if(btn) btn.innerText = "⏳ Atualizando...";
 
-            const indicadorLoading = document.querySelector('.loading');
-            if(indicadorLoading) indicadorLoading.innerHTML = "⏳ Buscando atualizações...";
+            // Timestamp para forçar o navegador a baixar dados novos
+            const timestamp = new Date().getTime();
+            const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
             Papa.parse(urlSemCache, {
                 download: true,
@@ -242,7 +265,7 @@
                 complete: function(results) {
                     dadosDoEvento = results.data;
                     
-                    // Mantém a aba ativa após o refresh
+                    // Descobre qual aba está aberta para recarregar ela
                     const botaoAtivo = document.querySelector('.nav-btn.active');
                     const diaAtivo = botaoAtivo ? (
                         botaoAtivo.innerText.includes('25') ? '25/02' :
@@ -251,24 +274,27 @@
                     ) : 'Geral';
                     
                     filtrarProgramacao(diaAtivo);
+                    
+                    if(btn) btn.innerText = "✅ Atualizado!";
+                    setTimeout(() => { if(btn) btn.innerText = "🔄 Checar atualizações"; }, 2000);
                 },
                 error: function(err) {
-                    console.error("Erro ao carregar:", err);
+                    console.error("Erro:", err);
+                    if(btn) btn.innerText = "❌ Erro ao atualizar";
                     document.getElementById('conteudo-programacao').innerHTML = 
-                        "<p style='text-align:center; color:red; margin-top:30px;'>Erro ao carregar a programação. Verifique sua conexão.</p>";
+                        "<p style='text-align:center; color:red; margin-top:30px;'>Erro de conexão. Tente novamente.</p>";
                 }
             });
         }
 
-        // Função para normalizar slugs (ex: "Mesa redonda" -> "mesa-redonda")
         function normalizarTipo(tipo) {
             if (!tipo) return "padrao";
             return tipo
                 .normalize('NFD')
                 .replace(/[\u0300-\u036f]/g, "")
                 .toLowerCase()
-                .replace(/\s/g, '-')
-                .replace(/[^\w\-]/g, '');
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]+/g, '');
         }
 
         function filtrarProgramacao(diaSelecionado, botaoClicado) {
@@ -298,7 +324,7 @@
                 if (evento.Observacoes && evento.Observacoes.trim() !== "") {
                     htmlDetalhes = `
                         <details>
-                            <summary>Clique para</summary>
+                            <summary>Ver</summary>
                             <div class="detalhes-texto">${evento.Observacoes}</div>
                         </details>
                     `;
@@ -329,11 +355,11 @@
             });
         }
 
-        // Inicia carregamento
+        // Carrega ao abrir
         carregarDados();
         
-        // Verifica atualizações a cada 5 minutos
-        setInterval(carregarDados, 300000);
+        // Tenta atualizar sozinho a cada 2 minutos
+        setInterval(carregarDados, 120000);
 
     </script>
 </body>
