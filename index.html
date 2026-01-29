@@ -138,7 +138,7 @@
         }
         
         summary::-webkit-details-marker { display: none; }
-        summary::after { content: " + Ver mais detalhes"; }
+        summary::after { content: "Ver mais detalhes"; }
         details[open] summary::after { content: " - Menos detalhes"; }
 
         .detalhes-texto {
@@ -298,7 +298,7 @@
                 if (evento.Observacoes && evento.Observacoes.trim() !== "") {
                     htmlDetalhes = `
                         <details>
-                            <summary>Ver detalhes</summary>
+                            <summary>+</summary>
                             <div class="detalhes-texto">${evento.Observacoes}</div>
                         </details>
                     `;
