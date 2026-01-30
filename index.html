@@ -44,16 +44,23 @@
         header h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--cor-azul); }
         header p { margin-top: 5px; color: #666; }
 
-        /* Botão de Atualizar */
+        /* Botões */
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
         .btn-update {
             background-color: transparent;
             border: 1px solid var(--cor-azul);
             color: var(--cor-azul);
-            padding: 5px 15px;
+            padding: 8px 15px;
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.8rem;
-            margin-top: 15px;
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
@@ -62,9 +69,6 @@
         .btn-update:hover {
             background-color: var(--cor-azul);
             color: white;
-        }
-        .btn-update:active {
-            transform: scale(0.95);
         }
 
         /* --- NAVEGAÇÃO --- */
@@ -93,7 +97,6 @@
         .nav-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
         .nav-btn.active { background-color: var(--cor-laranja); }
 
-        /* --- CONTEÚDO --- */
         .container {
             max-width: 800px;
             margin: 20px auto;
@@ -101,14 +104,9 @@
             min-height: 50vh;
         }
 
-        .loading {
-            text-align: center;
-            margin-top: 50px;
-            font-size: 1.2rem;
-            color: var(--cor-azul);
-        }
+        .loading { text-align: center; margin-top: 50px; font-size: 1.2rem; color: var(--cor-azul); }
 
-        /* --- CARTÃO DO EVENTO --- */
+        /* --- CARTÃO --- */
         .card {
             background: white;
             border-radius: 8px;
@@ -118,10 +116,7 @@
             border-left: 5px solid #ccc;
             display: flex;
             flex-direction: column;
-            transition: transform 0.2s;
         }
-
-        .card:hover { transform: translateY(-2px); }
 
         .card-header {
             background-color: #f9f9f9;
@@ -130,92 +125,39 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #eee;
         }
 
         .card-body { padding: 15px; }
-
         .card-time { color: #555; font-weight: bold; font-size: 0.9rem; }
-        
-        .card-location {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .card-location { font-size: 0.9rem; color: #666; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
 
-        /* --- DETALHES --- */
-        details {
-            margin-top: 15px;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-
-        summary {
-            cursor: pointer;
-            color: var(--cor-laranja);
-            font-weight: bold;
-            font-size: 0.9rem;
-            list-style: none;
-        }
-        
-        summary::-webkit-details-marker { display: none; }
+        details { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        summary { cursor: pointer; color: var(--cor-laranja); font-weight: bold; font-size: 0.9rem; list-style: none; }
         summary::after { content: "mais detalhes"; }
         details[open] summary::after { content: "menos detalhes"; }
+        .detalhes-texto { margin-top: 10px; font-size: 0.9rem; color: #444; background-color: #fff8e1; padding: 10px; border-radius: 4px; }
 
-        .detalhes-texto {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #444;
-            background-color: #fff8e1;
-            padding: 10px;
-            border-radius: 4px;
-            line-height: 1.5;
-        }
+        .card-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; text-transform: uppercase; color: white; font-weight: bold; }
 
-        /* --- TAGS --- */
-        .card-tag {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: white;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            text-align: center;
-            max-width: 150px;
-        }
-
-        /* --- CORES --- */
-        /* Grupo LARANJA */
-        .tipo-oficina, .tipo-visita-tecnica, .tipo-exposicao-interativa { border-color: var(--cor-laranja); }
-        .tag-oficina, .tag-visita-tecnica, .tag-exposicao-interativa { background-color: var(--cor-laranja); }
-
-        /* Grupo AZUL */
-        .tipo-plenaria, .tipo-mesa-redonda, .tipo-apresentacao, .tipo-reuniao, .tipo-atendimento-orientado { border-color: var(--cor-azul); }
-        .tag-plenaria, .tag-mesa-redonda, .tag-apresentacao, .tag-reuniao, .tag-atendimento-orientado { background-color: var(--cor-azul); }
-
-        /* Grupo VERDE */
-        .tipo-atividade-cultural, .tipo-atividade-em-grupo, .tipo-encontro-livre, .tipo-convivencia, .tipo-exibicao-debate { border-color: var(--cor-verde); }
-        .tag-atividade-cultural, .tag-atividade-em-grupo, .tag-encontro-livre, .tag-convivencia, .tag-exibicao-debate { background-color: var(--cor-verde); }
-
-        /* Grupo CINZA */
+        /* Estilos de Cores */
+        .tipo-oficina, .tipo-visita-tecnica { border-color: var(--cor-laranja); }
+        .tag-oficina, .tag-visita-tecnica { background-color: var(--cor-laranja); }
+        .tipo-plenaria, .tipo-mesa-redonda { border-color: var(--cor-azul); }
+        .tag-plenaria, .tag-mesa-redonda { background-color: var(--cor-azul); }
         .tipo-alimentacao { border-color: var(--cor-cinza); }
         .tag-alimentacao { background-color: var(--cor-cinza); }
 
-        /* Padrão */
-        .tipo-padrao { border-color: #999; }
-        .tag-padrao { background-color: #999; }
+        /* --- ESTILOS EXCLUSIVOS PARA O PDF (Invisíveis na tela) --- */
+        #pdf-template { display: none; font-family: 'Roboto', sans-serif; padding: 10px; background: white; }
+        .pdf-grid { display: flex; gap: 15px; align-items: flex-start; }
+        .pdf-col { flex: 1; border: 1px solid #ddd; border-radius: 5px; padding: 10px; }
+        .pdf-col h2 { font-size: 1.2rem; color: var(--cor-verde); text-align: center; border-bottom: 2px solid var(--cor-laranja); padding-bottom: 5px; }
+        .pdf-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .pdf-item b { font-size: 0.85rem; color: var(--cor-azul); display: block; }
+        .pdf-item span { font-size: 0.75rem; color: #666; }
+        .pdf-item p { font-size: 0.8rem; margin: 3px 0; font-weight: bold; }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.8rem;
-            color: #777;
-            margin-top: 40px;
-        }
+        footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #777; }
     </style>
 </head>
 <body>
@@ -224,7 +166,10 @@
         <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
         <h1>II Encontro Nacional</h1>
         <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
-        <button onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
+        <div class="header-buttons">
+            <button onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
+            <button onclick="gerarPDF()" class="btn-update">🖨️ Versão para Impressão</button>
+        </div>
     </header>
 
     <nav class="nav-container">
@@ -238,24 +183,20 @@
         <div class="loading">⏳ Carregando programação...</div>
     </div>
 
-    <footer>
-        <p>Programação sujeita a alterações.</p>
-    </footer>
+    <div id="pdf-template"></div>
+
+    <footer><p>Programação sujeita a alterações.</p></footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
         const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
-        
         let dadosDoEvento = [];
 
         function carregarDados() {
             const btn = document.querySelector('.btn-update');
             if(btn) btn.innerText = "⏳ Atualizando...";
-
-            // O TRUQUE DO RELÓGIO (Simples e Seguro)
-            // Adiciona &t=123456... ao link. O navegador vê como um link novo e baixa de novo.
-            // O Papa.parse nativo (download: true) lida melhor com conexões do que o 'fetch' manual.
             const timestamp = new Date().getTime();
             const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
@@ -265,104 +206,98 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     dadosDoEvento = results.data;
-                    console.log("Sucesso! Itens carregados:", dadosDoEvento.length);
-                    
-                    // Descobre qual aba está aberta
                     const botaoAtivo = document.querySelector('.nav-btn.active');
-                    const diaAtivo = botaoAtivo ? (
-                        botaoAtivo.innerText.includes('25') ? '25/02' :
-                        botaoAtivo.innerText.includes('26') ? '26/02' :
-                        botaoAtivo.innerText.includes('27') ? '27/02' : 'Geral'
-                    ) : 'Geral';
-                    
-                    filtrarProgramacao(diaAtivo);
-                    
-                    if(btn) btn.innerText = "✅ Atualizado!";
-                    setTimeout(() => { if(btn) btn.innerText = "🔄 Checar atualizações"; }, 2000);
-                },
-                error: function(err) {
-                    console.error("Erro PapaParse:", err);
-                    if(btn) btn.innerText = "❌ Erro ao atualizar";
-                    document.getElementById('conteudo-programacao').innerHTML = 
-                        "<p style='text-align:center; color:red; margin-top:30px;'>Não foi possível carregar a planilha.<br>Verifique sua conexão.</p>";
+                    let dia = 'Geral';
+                    if(botaoAtivo){
+                        if(botaoAtivo.innerText.includes('25')) dia = '25/02';
+                        else if(botaoAtivo.innerText.includes('26')) dia = '26/02';
+                        else if(botaoAtivo.innerText.includes('27')) dia = '27/02';
+                    }
+                    filtrarProgramacao(dia);
+                    if(btn) btn.innerText = "🔄 Checar atualizações";
                 }
             });
         }
 
         function normalizarTipo(tipo) {
             if (!tipo) return "padrao";
-            return tipo
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^\w\-]+/g, '');
+            return tipo.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
         }
 
         function filtrarProgramacao(diaSelecionado, botaoClicado) {
             const container = document.getElementById('conteudo-programacao');
-            
             if(botaoClicado) {
                 document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
                 botaoClicado.classList.add('active');
             }
-
             container.innerHTML = "";
-            
-            const eventosFiltrados = dadosDoEvento.filter(item => {
-                if (diaSelecionado === 'Geral') return true; 
-                return item.Dia && item.Dia.includes(diaSelecionado);
-            });
-
-            if (eventosFiltrados.length === 0) {
-                container.innerHTML = "<p style='text-align:center; margin-top:30px; color:#666'>Sem programação para este dia.</p>";
-                return;
-            }
+            const eventosFiltrados = dadosDoEvento.filter(item => diaSelecionado === 'Geral' || (item.Dia && item.Dia.includes(diaSelecionado)));
 
             eventosFiltrados.forEach(evento => {
                 const classeTipo = normalizarTipo(evento.Tipo);
-                
-                let htmlDetalhes = "";
-                if (evento.Observacoes && evento.Observacoes.trim() !== "") {
-                    htmlDetalhes = `
-                        <details>
-                            <summary>Ver </summary>
-                            <div class="detalhes-texto">${evento.Observacoes}</div>
-                        </details>
-                    `;
-                }
+                let htmlDetalhes = evento.Observacoes ? `<details><summary>Ver </summary><div class="detalhes-texto">${evento.Observacoes}</div></details>` : "";
+                let htmlDia = diaSelecionado === 'Geral' ? `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px;">📅 ${evento.Dia}</span>` : "";
 
-                let htmlDia = "";
-                if (diaSelecionado === 'Geral') {
-                    htmlDia = `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px; color:#333;">📅 ${evento.Dia}</span>`;
-                }
-
-                const cartao = `
+                container.innerHTML += `
                     <div class="card tipo-${classeTipo}">
                         <div class="card-header">
-                            <div>
-                                ${htmlDia}
-                                <span class="card-time">⏰ ${evento.Hora}</span>
-                            </div>
+                            <div>${htmlDia}<span class="card-time">⏰ ${evento.Hora}</span></div>
                             <span class="card-tag tag-${classeTipo}">${evento.Tipo}</span>
                         </div>
                         <div class="card-body">
-                            <h3 style="margin: 0 0 5px 0; color: var(--cor-azul)">${evento.Atividade}</h3>
+                            <h3 style="margin: 0; color: var(--cor-azul)">${evento.Atividade}</h3>
                             <span class="card-location">📍 ${evento.Local}</span>
                             ${htmlDetalhes}
                         </div>
-                    </div>
-                `;
-                container.innerHTML += cartao;
+                    </div>`;
             });
         }
 
-        // Carrega ao abrir
-        carregarDados();
-        
-        // Tenta atualizar sozinho a cada 2 minutos
-        setInterval(carregarDados, 120000);
+        // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
+        function gerarPDF() {
+            const tempArea = document.getElementById('pdf-template');
+            tempArea.style.display = "block"; // Ativa temporariamente para captura
+            
+            // Filtra os dias específicos
+            const dias = ['25/02', '26/02', '27/02'];
+            let colunasHTML = `<div style="text-align:center; margin-bottom:20px;">
+                <h1 style="color:#09747f; margin:0;">II Encontro Nacional Rede Colabora APS</h1>
+                <p>Programação Geral: 25 a 27 de Fevereiro</p>
+            </div>
+            <div class="pdf-grid">`;
 
+            dias.forEach(dia => {
+                const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
+                colunasHTML += `<div class="pdf-col"><h2>${dia}</h2>`;
+                
+                eventosDia.forEach(ev => {
+                    colunasHTML += `
+                        <div class="pdf-item">
+                            <b>${ev.Hora} - ${ev.Tipo}</b>
+                            <p>${ev.Atividade}</p>
+                            <span>📍 ${ev.Local}</span>
+                        </div>`;
+                });
+                colunasHTML += `</div>`;
+            });
+            colunasHTML += `</div>`;
+            
+            tempArea.innerHTML = colunasHTML;
+
+            const opt = {
+                margin:       10,
+                filename:     'Programacao_ColaboraAPS.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(tempArea).save().then(() => {
+                tempArea.style.display = "none"; // Oculta novamente após salvar
+            });
+        }
+
+        carregarDados();
     </script>
 </body>
 </html>
