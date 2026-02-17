@@ -166,12 +166,13 @@
         <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
         <h1>II Encontro Nacional</h1>
         <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
-        <div class="header-buttons">
+       <div class="header-buttons">
     <a href="https://redecolabora.omora.com.br/totem" style="text-decoration: none;">
         <button class="btn-update">⬅️ Voltar ao Início</button>
     </a>
     
-    <button onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
+    <button id="btn-refresh" onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
+    
     <button onclick="gerarPDF()" class="btn-update">🖨️ Versão para Impressão</button>
 </div>
     </header>
@@ -198,30 +199,35 @@
         const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
         let dadosDoEvento = [];
 
-        function carregarDados() {
-            const btn = document.querySelector('.btn-update');
-            if(btn) btn.innerText = "⏳ Atualizando...";
-            const timestamp = new Date().getTime();
-            const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
+      function carregarDados() {
+    // Agora buscamos pelo ID específico, e não pela classe genérica
+    const btn = document.getElementById('btn-refresh'); 
+    
+    if(btn) btn.innerText = "⏳ Atualizando...";
+    
+    const timestamp = new Date().getTime();
+    const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
 
-            Papa.parse(urlSemCache, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    dadosDoEvento = results.data;
-                    const botaoAtivo = document.querySelector('.nav-btn.active');
-                    let dia = 'Geral';
-                    if(botaoAtivo){
-                        if(botaoAtivo.innerText.includes('25')) dia = '25/02';
-                        else if(botaoAtivo.innerText.includes('26')) dia = '26/02';
-                        else if(botaoAtivo.innerText.includes('27')) dia = '27/02';
-                    }
-                    filtrarProgramacao(dia);
-                    if(btn) btn.innerText = "🔄 Checar atualizações";
-                }
-            });
+    Papa.parse(urlSemCache, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            dadosDoEvento = results.data;
+            const botaoAtivo = document.querySelector('.nav-btn.active');
+            let dia = 'Geral';
+            if(botaoAtivo){
+                if(botaoAtivo.innerText.includes('25')) dia = '25/02';
+                else if(botaoAtivo.innerText.includes('26')) dia = '26/02';
+                else if(botaoAtivo.innerText.includes('27')) dia = '27/02';
+            }
+            filtrarProgramacao(dia);
+            
+            // Volta ao texto original após carregar
+            if(btn) btn.innerText = "🔄 Checar atualizações";
         }
+    });
+}
 
         function normalizarTipo(tipo) {
             if (!tipo) return "padrao";
