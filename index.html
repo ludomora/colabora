@@ -316,143 +316,109 @@
         }
 
 function gerarPDF() {
-  const btnPdf = document.querySelector('button[onclick="gerarPDF()"]');
-  const textoOriginalBtn = btnPdf ? btnPdf.innerText : '';
-  if (btnPdf) btnPdf.innerText = "⏳ Gerando PDF...";
+    const btnPdf = document.querySelector('button[onclick="gerarPDF()"]');
+    const textoOriginalBtn = btnPdf ? btnPdf.innerText : '';
+    if (btnPdf) btnPdf.innerText = "⏳ Gerando PDF...";
 
-  // 1) container fora da tela, mas DENTRO do DOM (importante)
-  const divContainer = document.createElement('div');
-  divContainer.style.position = 'fixed';
-  divContainer.style.left = '-10000px';
-  divContainer.style.top = '0';
-  divContainer.style.width = '1100px';       // “tela” estável pro html2canvas
-  divContainer.style.background = '#fff';
-  divContainer.style.padding = '24px';
-  divContainer.style.fontFamily = "'Roboto', sans-serif";
-  divContainer.style.boxSizing = 'border-box';
-  document.body.appendChild(divContainer);
+    // 1. Criamos um container fantasma que tem EXATAMENTE o tamanho de um A4 (com as margens descontadas).
+    // O A4 tem 210mm x 297mm. Se vamos usar 5mm de margem no PDF, o tamanho do papel disponível é 200mm x 287mm.
+    const divContainer = document.createElement('div');
+    divContainer.style.position = 'absolute';
+    divContainer.style.left = '-9999px';
+    divContainer.style.top = '0';
+    divContainer.style.width = '200mm';
+    divContainer.style.height = '287mm';
+    divContainer.style.backgroundColor = '#ffffff';
+    divContainer.style.fontFamily = "'Roboto', sans-serif";
+    divContainer.style.boxSizing = 'border-box';
+    divContainer.style.overflow = 'hidden'; // Nada pode escapar desta caixa
+    document.body.appendChild(divContainer);
 
-  const dias = ['25/02', '26/02', '27/02'];
-  const diasComSemana = {
-    '25/02': '25/02 (Qua)',
-    '26/02': '26/02 (Qui)',
-    '27/02': '27/02 (Sex)'
-  };
+    const dias = ['25/02', '26/02', '27/02'];
+    const diasComSemana = {
+        '25/02': '25/02 (Qua)',
+        '26/02': '26/02 (Qui)',
+        '27/02': '27/02 (Sex)'
+    };
 
-  // helper: monta 1 coluna (um dia)
-  function renderColunaDia(dia) {
-    const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
-
-    const eventosAgrupados = [];
-    let grupoAtual = null;
-
-    eventosDia.forEach(ev => {
-      if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
-        grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
-      } else {
-        if (grupoAtual) eventosAgrupados.push(grupoAtual);
-        grupoAtual = {
-          Hora: ev.Hora,
-          Tipo: ev.Tipo,
-          atividades: [{ Atividade: ev.Atividade, Local: ev.Local }]
-        };
-      }
-    });
-    if (grupoAtual) eventosAgrupados.push(grupoAtual);
-
-    let html = `
-      <div class="pdf-col">
-        <h2>${diasComSemana[dia]}</h2>
+    // 2. Cabeçalho com tamanho estrito em milímetros
+    let conteudo = `
+        <div style="text-align:center; height: 28mm; margin-bottom: 2mm; box-sizing: border-box;">
+            <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" crossorigin="anonymous" style="max-height: 14mm; width: auto; margin-bottom: 2mm;">
+            <h1 style="color: #09747f; font-size: 14px; margin: 0 0 1px 0; padding: 0;">II Encontro Nacional</h1>
+            <p style="color: #666; font-size: 10px; margin: 0; padding: 0;">Programação Oficial</p>
+        </div>
+        <div style="display: flex; flex-direction: row; gap: 3mm; height: calc(100% - 30mm); align-items: stretch; width: 100%; box-sizing: border-box;">
     `;
 
-    eventosAgrupados.forEach(grupo => {
-      html += `
-        <div class="pdf-bloco">
-          <div class="pdf-linha-topo">${grupo.Hora} — ${grupo.Tipo}</div>
-      `;
-      grupo.atividades.forEach(ativ => {
-        html += `
-          <div class="pdf-ativ">${ativ.Atividade}</div>
-          <div class="pdf-local">📍 ${ativ.Local}</div>
+    dias.forEach(dia => {
+        const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
+        const eventosAgrupados = [];
+        let grupoAtual = null;
+
+        eventosDia.forEach(ev => {
+            if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
+                grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
+            } else {
+                if (grupoAtual) eventosAgrupados.push(grupoAtual);
+                grupoAtual = {
+                    Hora: ev.Hora,
+                    Tipo: ev.Tipo,
+                    atividades: [{ Atividade: ev.Atividade, Local: ev.Local }]
+                };
+            }
+        });
+        if (grupoAtual) eventosAgrupados.push(grupoAtual);
+
+        // 3. Colunas com medidas precisas e limpas
+        conteudo += `
+            <div style="flex: 1; width: 33.33%; background: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; padding: 2mm; box-sizing: border-box; display: flex; flex-direction: column;">
+                <h2 style="font-size: 11px; color: #025701; text-align: center; border-bottom: 1.5px solid #ff6d00; margin: 0 0 3px 0; padding-bottom: 2px; text-transform: uppercase;">
+                    ${diasComSemana[dia]}
+                </h2>
+                <div style="flex: 1; overflow: hidden;">
         `;
-      });
-      html += `</div>`;
+
+        eventosAgrupados.forEach(grupo => {
+            conteudo += `
+                <div style="margin-bottom: 2.5px; padding-bottom: 2px; border-bottom: 1px dotted #ccc;">
+                    <strong style="display: block; font-size: 8.5px; color: #09747f; margin-bottom: 1.5px;">${grupo.Hora} - ${grupo.Tipo}</strong>
+            `;
+
+            grupo.atividades.forEach(ativ => {
+                conteudo += `
+                    <p style="margin: 0 0 1.5px 0; font-size: 8px; line-height: 1.15; color: #222; letter-spacing: -0.1px; font-weight: bold;">${ativ.Atividade}</p>
+                    <span style="display: block; font-size: 7px; color: #555; margin-bottom: 2px;">📍 ${ativ.Local}</span>
+                `;
+            });
+
+            conteudo += `</div>`;
+        });
+
+        conteudo += `</div></div>`;
     });
 
-    html += `</div>`;
-    return html;
-  }
+    conteudo += `</div>`;
+    
+    divContainer.innerHTML = conteudo;
 
-  // 2) CSS do PDF (isolado e previsível)
-  const estilos = `
-    <style>
-      .pdf-capa{ text-align:center; margin-bottom:16px; }
-      .pdf-capa img{ max-width: 420px; height:auto; display:inline-block; }
-      .pdf-capa h1{ color:#09747f; font-size:26px; margin:10px 0 4px; }
-      .pdf-capa p{ color:#666; font-size:14px; margin:0; }
+    // 4. A configuração do PDF: Escala a 3 para a letra pequena não ficar pixelizada na foto, e margens de 5mm.
+    const opt = {
+        margin:       [5, 5, 5, 5],
+        filename:     'Programacao_ColaboraAPS.pdf',
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { scale: 3, useCORS: true, backgroundColor: '#ffffff', logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-      .pdf-page{ page-break-after: always; }
-      .pdf-grid{ display:flex; gap:16px; align-items:flex-start; }
-      .pdf-col{
-        flex:1; background:#f9f9f9; border:2px solid #e0e0e0;
-        border-radius:10px; padding:14px; box-sizing:border-box;
-      }
-      .pdf-col h2{
-        font-size:16px; color:#025701; text-align:center;
-        border-bottom:3px solid #ff6d00; margin:0 0 12px; padding-bottom:8px;
-        text-transform:uppercase;
-      }
-      .pdf-bloco{ padding:10px 0; border-bottom:1px dashed #cfcfcf; }
-      .pdf-linha-topo{ font-size:12px; color:#09747f; font-weight:700; margin-bottom:6px; }
-      .pdf-ativ{ font-size:12px; color:#222; font-weight:700; line-height:1.35; margin:0 0 3px; }
-      .pdf-local{ font-size:10.5px; color:#555; margin:0 0 8px; }
-    </style>
-  `;
-
-  // 3) Monta PÁGINAS: (25+26) na 1, (27) na 2
-  const conteudo = `
-    ${estilos}
-
-    <div class="pdf-capa">
-      <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" crossorigin="anonymous">
-      <h1>II Encontro Nacional</h1>
-      <p>Programação Oficial</p>
-    </div>
-
-    <div class="pdf-page">
-      <div class="pdf-grid">
-        ${renderColunaDia('25/02')}
-        ${renderColunaDia('26/02')}
-      </div>
-    </div>
-
-    <div class="pdf-page">
-      <div class="pdf-grid">
-        ${renderColunaDia('27/02')}
-        <div class="pdf-col" style="visibility:hidden;"></div>
-      </div>
-    </div>
-  `;
-
-  divContainer.innerHTML = conteudo;
-
-  // 4) opções com pagebreak + escala boa
-  const opt = {
-    margin: [8, 8, 8, 8],
-    filename: 'Programacao_ColaboraAPS.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: 1100 },
-    pagebreak: { mode: ['css', 'legacy'] },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(divContainer).save().then(() => {
-    document.body.removeChild(divContainer);
-    if (btnPdf) btnPdf.innerText = textoOriginalBtn;
-  }).catch(() => {
-    document.body.removeChild(divContainer);
-    if (btnPdf) btnPdf.innerText = textoOriginalBtn;
-  });
+    html2pdf().set(opt).from(divContainer).save().then(() => {
+        document.body.removeChild(divContainer);
+        if (btnPdf) btnPdf.innerText = textoOriginalBtn;
+    }).catch(err => {
+        console.error("Erro ao gerar PDF: ", err);
+        document.body.removeChild(divContainer);
+        if (btnPdf) btnPdf.innerText = textoOriginalBtn;
+    });
 }
         carregarDados();
     </script>
