@@ -315,25 +315,35 @@
             });
         }
 
-// --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (AJUSTE FINAL DE LAYOUT E HEADER) ---
+// --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (COM DIAS DA SEMANA) ---
         function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
-            tempArea.style.display = "block"; 
+            tempArea.style.display = "block"; // Ativa temporariamente para captura
             
+            // Esta é a lista que usamos para filtrar os dados (não mudamos)
             const dias = ['25/02', '26/02', '27/02'];
             
-            // 1. Reduzimos a imagem para 60% (aproximadamente 40% menor do que estava)
+            // 1. NOVO: O nosso "dicionário" de mapeamento. 
+            // Ele liga o valor de busca ao texto que queremos mostrar no PDF.
+            const diasComSemana = {
+                '25/02': '25/02 (Qua)',
+                '26/02': '26/02 (Qui)',
+                '27/02': '27/02 (Sex)'
+            };
+            
             let colunasHTML = `<div style="text-align:center; margin-bottom: 12px;">
                 <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 60%; height: auto;" crossorigin="anonymous">
             </div>
             <div class="pdf-grid" style="gap: 8px; box-sizing: border-box; width: 100%;">`;
 
             dias.forEach(dia => {
+                // O filtro continua a usar apenas o número (ex: '25/02')
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
                 
                 const eventosAgrupados = [];
                 let grupoAtual = null;
 
+                // Lógica de agrupamento das atividades do mesmo horário
                 eventosDia.forEach(ev => {
                     if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                         grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
@@ -348,9 +358,10 @@
                 });
                 if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-                // 3. Adicionamos box-sizing e word-break para evitar que o texto vaze ou empurre a coluna
+                // 2. ALTERAÇÃO: Aqui substituímos ${dia} por ${diasComSemana[dia]}
+                // O código vai procurar no dicionário qual é o texto correto para imprimir.
                 colunasHTML += `<div class="pdf-col" style="flex: 1; padding: 5px; box-sizing: border-box; word-break: break-word;">
-                    <h2 style="font-size: 13px; margin: 0 0 8px 0; color: var(--cor-verde); border-bottom: 2px solid var(--cor-laranja); padding-bottom: 3px;">${dia}</h2>`;
+                    <h2 style="font-size: 13px; margin: 0 0 8px 0; color: var(--cor-verde); border-bottom: 2px solid var(--cor-laranja); padding-bottom: 3px;">${diasComSemana[dia]}</h2>`;
                 
                 eventosAgrupados.forEach(grupo => {
                     colunasHTML += `
@@ -358,7 +369,6 @@
                             <b style="font-size: 10px; color: var(--cor-azul); display: block; margin-bottom: 3px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                             
                     grupo.atividades.forEach(ativ => {
-                        // 2. Removemos o "•" antes de ${ativ.Atividade}
                         colunasHTML += `
                             <p style="font-size: 9.5px; margin: 2px 0 0 0; line-height: 1.15;">${ativ.Atividade}</p>
                             <span style="font-size: 8.5px; color: #666; display: block; margin-bottom: 4px; margin-left: 0px;">📍 ${ativ.Local}</span>`;
@@ -372,14 +382,16 @@
 
             tempArea.innerHTML = colunasHTML;
 
+            // Opções do PDF (mantemos a margem inferior para dar espaço de respiro)
             const opt = {
-                margin:       [4, 4, 4, 4], 
+                margin:       [4, 4, 10, 4], 
                 filename:     'Programacao_ColaboraAPS.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
+            // Geração final do ficheiro
             html2pdf().set(opt).from(tempArea).save().then(() => {
                 tempArea.style.display = "none";
             });
