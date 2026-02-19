@@ -326,19 +326,18 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 1. Cabeçalho com tamanho adequado e margem generosa
+    // 1. O cabeçalho agora pode ser um pouco maior, já que a página é mais estreita
     let colunasHTML = `
     <div style="text-align:center; margin-bottom: 20px;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 50%; height: auto;" crossorigin="anonymous">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 60%; height: auto;" crossorigin="anonymous">
     </div>
-    <div class="pdf-grid" style="display: flex; gap: 15px; width: 100%; align-items: stretch; justify-content: center;">`;
+    <div class="pdf-grid" style="display: flex; flex-direction: column; gap: 20px; width: 100%;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
         const eventosAgrupados = [];
         let grupoAtual = null;
 
-        // Agrupamento dos eventos por Hora e Tipo (Mantido)
         eventosDia.forEach(ev => {
             if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                 grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
@@ -353,23 +352,24 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 2. Colunas com formato de "cartão" (fundo claro, bordas arredondadas e padding)
+        // 3. Os cartões agora ocupam 100% da largura. 
+        // Adicionei 'page-break-inside: avoid' para tentar evitar que um cartão seja cortado ao meio entre duas páginas.
         colunasHTML += `
-        <div class="pdf-col" style="flex: 1; padding: 15px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 8px; box-sizing: border-box;">
-            <h2 style="font-size: 14px; margin: 0 0 15px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 5px; text-transform: uppercase;">
+        <div class="pdf-col" style="width: 100%; padding: 15px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 8px; box-sizing: border-box; page-break-inside: avoid;">
+            <h2 style="font-size: 16px; margin: 0 0 15px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 5px; text-transform: uppercase;">
                 ${diasComSemana[dia]}
             </h2>`;
         
         eventosAgrupados.forEach(grupo => {
-            // 3. Blocos de conteúdo com espaçamento e fontes legíveis
             colunasHTML += `
                 <div class="pdf-item" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
-                    <b style="font-size: 11px; color: #1565C0; display: block; margin-bottom: 6px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                    <b style="font-size: 12px; color: #1565C0; display: block; margin-bottom: 6px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                     
             grupo.atividades.forEach(ativ => {
+                // Fontes ligeiramente maiores pois agora temos a largura inteira da página para ler
                 colunasHTML += `
-                    <p style="font-size: 10px; margin: 0 0 4px 0; line-height: 1.3; color: #333;">${ativ.Atividade}</p>
-                    <span style="font-size: 9px; color: #666; display: block; margin-bottom: 8px;">📍 ${ativ.Local}</span>`;
+                    <p style="font-size: 11px; margin: 0 0 4px 0; line-height: 1.4; color: #333;">${ativ.Atividade}</p>
+                    <span style="font-size: 10px; color: #666; display: block; margin-bottom: 8px;">📍 ${ativ.Local}</span>`;
             });
             
             colunasHTML += `</div>`;
@@ -380,14 +380,13 @@ function gerarPDF() {
 
     tempArea.innerHTML = colunasHTML;
 
-    // 4. Configuração focada em qualidade de leitura e quebra de página se necessário
+    // 4. Configuração do PDF para VERTICAL (Portrait) e margens um pouco maiores
     const opt = {
-        margin: [10, 10, 10, 10], // Margens de 1cm para respirar
+        margin: [15, 15, 15, 15], // 1.5cm de margem em todos os lados
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-        // Deixamos o sistema quebrar a página automaticamente se ficar grande demais
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, // MUDANÇA PARA VERTICAL AQUI
         pagebreak: { mode: ['css', 'legacy'] } 
     };
 
