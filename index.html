@@ -316,38 +316,51 @@
         }
 
         // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
+      // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
         function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
             tempArea.style.display = "block"; // Ativa temporariamente para captura
             
             // Filtra os dias específicos
             const dias = ['25/02', '26/02', '27/02'];
-            let colunasHTML = `<div style="text-align:center; margin-bottom:20px;">
-                <h1 style="color:#09747f; margin:0;">II Encontro Nacional Rede Colabora APS</h1>
-                <p>Programação Geral: 25 a 27 de Fevereiro</p>
+            
+            // Cabeçalho do PDF com fontes ligeiramente menores
+            let colunasHTML = `<div style="text-align:center; margin-bottom:10px;">
+                <h1 style="color:#09747f; margin:0; font-size: 1.1rem;">II Encontro Nacional Rede Colabora APS</h1>
+                <p style="margin: 2px 0; font-size: 0.8rem;">Programação Geral: 25 a 27 de Fevereiro</p>
             </div>
             <div class="pdf-grid">`;
 
             dias.forEach(dia => {
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
-                colunasHTML += `<div class="pdf-col"><h2>${dia}</h2>`;
+                colunasHTML += `<div class="pdf-col" style="padding: 5px;">
+                    <h2 style="font-size: 0.95rem; margin-top: 0;">${dia}</h2>`;
                 
                 eventosDia.forEach(ev => {
+                    // Ajustamos as margens e fontes de cada item para caber tudo na mesma página
                     colunasHTML += `
-                        <div class="pdf-item">
-                            <b>${ev.Hora} - ${ev.Tipo}</b>
-                            <p>${ev.Atividade}</p>
-                            <span>📍 ${ev.Local}</span>
+                        <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px;">
+                            <b style="font-size: 0.75rem;">${ev.Hora} - ${ev.Tipo}</b>
+                            <p style="font-size: 0.7rem; margin: 2px 0;">${ev.Atividade}</p>
+                            <span style="font-size: 0.65rem;">📍 ${ev.Local}</span>
                         </div>`;
                 });
                 colunasHTML += `</div>`;
             });
             colunasHTML += `</div>`;
             
+            // --- INSERÇÃO DA BARRA DE LOGOS NO RODAPÉ DO PDF ---
+            colunasHTML += `
+            <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
+                <img src="https://github.com/ludomora/colabora/blob/main/barra_ColaboraAPS.png?raw=true" alt="Logos Colabora APS" style="max-width: 85%; height: auto;">
+            </div>
+            `;
+
             tempArea.innerHTML = colunasHTML;
 
+            // Opções do PDF: reduzimos a margem para '5' para ganhar mais espaço
             const opt = {
-                margin:       10,
+                margin:       5, 
                 filename:     'Programacao_ColaboraAPS.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
