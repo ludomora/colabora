@@ -319,12 +319,12 @@ function gerarPDF() {
     const tempArea = document.getElementById('pdf-template');
     tempArea.style.display = "block"; 
     
-    // 1. A REGRA DE OURO: Travar o tamanho da "caixa" HTML nas medidas exatas do papel.
-    // Uma folha A4 tem 210mm x 297mm. Vamos usar margens de 5mm, então sobra: 200mm x 287mm.
+    // 1. Travar as medidas em mm para impedir estouro.
+    // Usamos altura ligeiramente menor (285mm em vez de 287mm) para prevenir a 2ª folha em branco.
     tempArea.style.width = "200mm";
-    tempArea.style.height = "287mm";
+    tempArea.style.height = "285mm";
     tempArea.style.boxSizing = "border-box";
-    tempArea.style.overflow = "hidden"; // Proíbe estritamente qualquer coisa de passar da página 1
+    tempArea.style.overflow = "hidden"; // Essencial para cortar o excesso
     tempArea.style.backgroundColor = "#ffffff";
     tempArea.style.margin = "0";
     tempArea.style.padding = "0";
@@ -336,12 +336,12 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 2. Cabeçalho com altura travada (25mm) para não empurrar o texto para baixo
+    // 2. Cabeçalho otimizado. Altura de 25mm.
     let colunasHTML = `
-    <div style="text-align:center; height: 25mm; margin-bottom: 2mm;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 100%; max-width: 80%; object-fit: contain;" crossorigin="anonymous">
+    <div style="text-align:center; height: 25mm; display: flex; align-items: center; justify-content: center; margin-bottom: 2mm;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 90%; max-width: 80%; object-fit: contain;" crossorigin="anonymous">
     </div>
-    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 3mm; height: calc(100% - 27mm); align-items: stretch;">`;
+    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 4mm; height: calc(100% - 27mm); align-items: stretch;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
@@ -362,43 +362,52 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 4. Medidas super justas e fonte ligeiramente condensada (letter-spacing)
+        // 3. Colunas: flex-direction column permite que o conteúdo cresça suavemente
         colunasHTML += `
-        <div class="pdf-col" style="flex: 1; width: 33.33%; padding: 2mm; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; box-sizing: border-box;">
-            <h2 style="font-size: 11px; margin: 0 0 3px 0; color: #2E7D32; border-bottom: 1.5px solid #F57C00; padding-bottom: 2px; text-transform: uppercase; text-align: center;">
+        <div class="pdf-col" style="flex: 1; width: 33.33%; padding: 3mm 2.5mm; background-color: #f9fbfb; border: 1px solid #e0e6ed; border-radius: 6px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2.5mm;">
+            <h2 style="font-size: 11.5px; margin: 0; color: #1e5631; border-bottom: 2px solid #e67e22; padding-bottom: 3px; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;">
                 ${diasComSemana[dia]}
-            </h2>`;
+            </h2>
+            <div style="display: flex; flex-direction: column; gap: 2.5mm;">`;
         
-        eventosAgrupados.forEach(grupo => {
+        eventosAgrupados.forEach((grupo, index) => {
+            // Adiciona border-bottom apenas se não for o último elemento, para um design mais limpo
+            const isLast = index === eventosAgrupados.length - 1;
+            const borderStyle = isLast ? 'none' : '1px solid #dcdde1';
+
             colunasHTML += `
-                <div class="pdf-item" style="margin-bottom: 2.5px; padding-bottom: 2.5px; border-bottom: 1px dotted #ccc;">
-                    <b style="font-size: 8.5px; color: #1565C0; display: block; margin-bottom: 1.5px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                <div class="pdf-item" style="padding-bottom: 2.5mm; border-bottom: ${borderStyle};">
+                    <b style="font-size: 9px; color: #2980b9; display: block; margin-bottom: 2px; text-transform: capitalize;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                     
             grupo.atividades.forEach(ativ => {
+                // Fontes melhoradas: line-height de 1.3 para legibilidade
                 colunasHTML += `
-                    <p style="font-size: 8px; margin: 0 0 1.5px 0; line-height: 1.15; color: #111; letter-spacing: -0.1px;">${ativ.Atividade}</p>
-                    <span style="font-size: 7px; color: #666; display: block;">📍 ${ativ.Local}</span>`;
+                    <p style="font-size: 8.5px; margin: 0 0 2px 0; line-height: 1.3; color: #2c3e50; font-weight: 500;">${ativ.Atividade}</p>
+                    <span style="font-size: 7.5px; color: #7f8c8d; display: block; display: flex; align-items: center; gap: 2px;">
+                       <span style="font-size: 6px;">📍</span> ${ativ.Local}
+                    </span>`;
             });
             
             colunasHTML += `</div>`;
         });
-        colunasHTML += `</div>`;
+        colunasHTML += `</div></div>`;
     });
     colunasHTML += `</div>`;
 
     tempArea.innerHTML = colunasHTML;
 
-    // 5. PDF com margem cravada em 5mm e escala 3x (para a letra de 8px ficar super nítida)
+    // 4. Configuração PDF:
+    // Reduzimos a margem de baixo a zero [Topo, Direita, Fundo, Esquerda].
+    // Isto evita a criação acidental de uma página em branco.
     const opt = {
-        margin: [5, 5, 5, 5], 
+        margin: [5, 5, 0, 5], 
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 3, useCORS: true }, 
+        html2canvas: { scale: 3, useCORS: true, letterRendering: true }, 
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
     };
 
     html2pdf().set(opt).from(tempArea).save().then(() => {
-        // 6. Limpeza fundamental para a tua página web voltar ao normal
         tempArea.style.display = "none";
         tempArea.style.width = "";
         tempArea.style.height = "";
