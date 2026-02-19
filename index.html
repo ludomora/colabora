@@ -316,62 +316,61 @@
         }
 
         // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
-      // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
-        function gerarPDF() {
+    function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
             tempArea.style.display = "block"; // Ativa temporariamente para captura
             
             // Filtra os dias específicos
             const dias = ['25/02', '26/02', '27/02'];
             
-            // Cabeçalho do PDF com fontes ligeiramente menores
-            let colunasHTML = `<div style="text-align:center; margin-bottom:10px;">
-                <h1 style="color:#09747f; margin:0; font-size: 1.1rem;">II Encontro Nacional Rede Colabora APS</h1>
-                <p style="margin: 2px 0; font-size: 0.8rem;">Programação Geral: 25 a 27 de Fevereiro</p>
+            // Cabeçalho ultra compacto
+            let colunasHTML = `<div style="text-align:center; margin-bottom:5px;">
+                <h1 style="color:#09747f; margin:0; font-size: 14px;">II Encontro Nacional Rede Colabora APS</h1>
+                <p style="margin: 0; font-size: 10px;">Programação Geral: 25 a 27 de Fevereiro</p>
             </div>
-            <div class="pdf-grid">`;
+            <div class="pdf-grid" style="gap: 8px;">`;
 
             dias.forEach(dia => {
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
-                colunasHTML += `<div class="pdf-col" style="padding: 5px;">
-                    <h2 style="font-size: 0.95rem; margin-top: 0;">${dia}</h2>`;
+                colunasHTML += `<div class="pdf-col" style="padding: 4px;">
+                    <h2 style="font-size: 12px; margin: 0 0 4px 0;">${dia}</h2>`;
                 
                 eventosDia.forEach(ev => {
-                    // Ajustamos as margens e fontes de cada item para caber tudo na mesma página
+                    // Itens espremidos com line-height reduzido e fontes em px
                     colunasHTML += `
-                        <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px;">
-                            <b style="font-size: 0.75rem;">${ev.Hora} - ${ev.Tipo}</b>
-                            <p style="font-size: 0.7rem; margin: 2px 0;">${ev.Atividade}</p>
-                            <span style="font-size: 0.65rem;">📍 ${ev.Local}</span>
+                        <div class="pdf-item" style="margin-bottom: 2px; padding-bottom: 2px;">
+                            <b style="font-size: 9px;">${ev.Hora} - ${ev.Tipo}</b>
+                            <p style="font-size: 9px; margin: 1px 0; line-height: 1.1;">${ev.Atividade}</p>
+                            <span style="font-size: 8px;">📍 ${ev.Local}</span>
                         </div>`;
                 });
                 colunasHTML += `</div>`;
             });
             colunasHTML += `</div>`;
             
-            // --- INSERÇÃO DA BARRA DE LOGOS NO RODAPÉ DO PDF ---
+            // Barra de logos ajustada
             colunasHTML += `
-            <div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;">
-                <img src="https://github.com/ludomora/colabora/blob/main/barra_ColaboraAPS.png?raw=true" alt="Logos Colabora APS" style="max-width: 85%; height: auto;">
+            <div style="text-align: center; margin-top: 5px; padding-top: 5px;">
+                <img src="https://github.com/ludomora/colabora/blob/main/barra_ColaboraAPS.png?raw=true" alt="Logos Colabora APS" style="max-width: 65%; height: auto;">
             </div>
             `;
 
             tempArea.innerHTML = colunasHTML;
 
-            // Opções do PDF: reduzimos a margem para '5' para ganhar mais espaço
+            // Opções do PDF: margens de 3mm (topo, direita, baixo, esquerda)
             const opt = {
-                margin:       5, 
+                margin:       [3, 3, 3, 3],
                 filename:     'Programacao_ColaboraAPS.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
+            // Gera o PDF
             html2pdf().set(opt).from(tempArea).save().then(() => {
-                tempArea.style.display = "none"; // Oculta novamente após salvar
+                tempArea.style.display = "none"; // Oculta após salvar
             });
         }
-
         carregarDados();
     </script>
 </body>
