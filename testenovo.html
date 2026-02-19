@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programação - II Encontro Nacional Rede Colabora APS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIÁVEIS DE CORES --- */
+        :root {
+            --cor-laranja: #ff6d00;
+            --cor-azul: #09747f;
+            --cor-verde: #025701;
+            --cor-cinza: #757575;
+            --cor-fundo: #f4f4f4;
+            --cor-texto: #333;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            background-color: white;
+            color: var(--cor-azul);
+            text-align: center;
+            padding: 2rem 1rem;
+            border-bottom: 4px solid var(--cor-laranja);
+            position: relative;
+        }
+
+        .logo-img {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        header h1 { margin: 10px 0 0 0; font-size: 1.6rem; color: var(--cor-azul); }
+        header p { margin-top: 5px; color: #666; }
+
+        /* Botões */
+        .header-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .btn-update {
+            background-color: transparent;
+            border: 1px solid var(--cor-azul);
+            color: var(--cor-azul);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-update:hover {
+            background-color: var(--cor-azul);
+            color: white;
+        }
+
+        /* --- NAVEGAÇÃO --- */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            background-color: var(--cor-verde);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .nav-btn.active { background-color: var(--cor-laranja); }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            min-height: 50vh;
+        }
+
+        .loading { text-align: center; margin-top: 50px; font-size: 1.2rem; color: var(--cor-azul); }
+
+        /* --- CARTÃO --- */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-left: 5px solid #ccc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            background-color: #f9f9f9;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body { padding: 15px; }
+        .card-time { color: #555; font-weight: bold; font-size: 0.9rem; }
+        .card-location { font-size: 0.9rem; color: #666; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+
+        details { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        summary { cursor: pointer; color: var(--cor-laranja); font-weight: bold; font-size: 0.9rem; list-style: none; }
+        summary::after { content: "mais detalhes"; }
+        details[open] summary::after { content: "menos detalhes"; }
+        .detalhes-texto { margin-top: 10px; font-size: 0.9rem; color: #444; background-color: #fff8e1; padding: 10px; border-radius: 4px; }
+
+        .card-tag { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; text-transform: uppercase; color: white; font-weight: bold; }
+
+        /* Estilos de Cores */
+        .tipo-oficina, .tipo-visita-tecnica { border-color: var(--cor-laranja); }
+        .tag-oficina, .tag-visita-tecnica { background-color: var(--cor-laranja); }
+        .tipo-plenaria, .tipo-mesa-redonda { border-color: var(--cor-azul); }
+        .tag-plenaria, .tag-mesa-redonda { background-color: var(--cor-azul); }
+        .tipo-alimentacao { border-color: var(--cor-cinza); }
+        .tag-alimentacao { background-color: var(--cor-cinza); }
+
+        /* --- ESTILOS EXCLUSIVOS PARA O PDF (Invisíveis na tela) --- */
+        #pdf-template { display: none; font-family: 'Roboto', sans-serif; padding: 10px; background: white; }
+        .pdf-grid { display: flex; gap: 15px; align-items: flex-start; }
+        .pdf-col { flex: 1; border: 1px solid #ddd; border-radius: 5px; padding: 10px; }
+        .pdf-col h2 { font-size: 1.2rem; color: var(--cor-verde); text-align: center; border-bottom: 2px solid var(--cor-laranja); padding-bottom: 5px; }
+        .pdf-item { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .pdf-item b { font-size: 0.85rem; color: var(--cor-azul); display: block; }
+        .pdf-item span { font-size: 0.75rem; color: #666; }
+        .pdf-item p { font-size: 0.8rem; margin: 3px 0; font-weight: bold; }
+
+        footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #777; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" alt="Logo ColaboraAPS" class="logo-img">
+        <h1>II Encontro Nacional</h1>
+        <p>Rio de Janeiro - 24 a 27 de Fevereiro de 2026</p>
+       <div class="header-buttons">
+    <a href="https://redecolabora.omora.com.br/totem" style="text-decoration: none;">
+        <button class="btn-update">⬅️ Voltar ao Início</button>
+    </a>
+    
+    <button id="btn-refresh" onclick="carregarDados()" class="btn-update">🔄 Checar atualizações</button>
+    
+    <button onclick="gerarPDF()" class="btn-update">🖨️ Versão para Impressão</button>
+</div>
+    </header>
+
+    <nav class="nav-container">
+        <button class="nav-btn active" onclick="filtrarProgramacao('Geral', this)">Programação Completa</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('25/02', this)">25/02 (Qua)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('26/02', this)">26/02 (Qui)</button>
+        <button class="nav-btn" onclick="filtrarProgramacao('27/02', this)">27/02 (Sex)</button>
+    </nav>
+
+    <div class="container" id="conteudo-programacao">
+        <div class="loading">⏳ Carregando programação...</div>
+    </div>
+
+    <div id="pdf-template"></div>
+
+    <footer><p>Programação sujeita a alterações.</p></footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        const URL_DO_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSvQy4q-OxuAU1qksB7Ibq7tgCXawoOtw0jYsNV3NIru1brGHNmeH32ARzJbccsFhKTOcgca0WZpCGr/pub?output=csv";
+        let dadosDoEvento = [];
+
+      function carregarDados() {
+    // Agora buscamos pelo ID específico, e não pela classe genérica
+    const btn = document.getElementById('btn-refresh'); 
+    
+    if(btn) btn.innerText = "⏳ Atualizando...";
+    
+    const timestamp = new Date().getTime();
+    const urlSemCache = URL_DO_CSV + "&t=" + timestamp;
+
+    Papa.parse(urlSemCache, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            dadosDoEvento = results.data;
+            const botaoAtivo = document.querySelector('.nav-btn.active');
+            let dia = 'Geral';
+            if(botaoAtivo){
+                if(botaoAtivo.innerText.includes('25')) dia = '25/02';
+                else if(botaoAtivo.innerText.includes('26')) dia = '26/02';
+                else if(botaoAtivo.innerText.includes('27')) dia = '27/02';
+            }
+            filtrarProgramacao(dia);
+            
+            // Volta ao texto original após carregar
+            if(btn) btn.innerText = "🔄 Checar atualizações";
+        }
+    });
+}
+
+        function normalizarTipo(tipo) {
+            if (!tipo) return "padrao";
+            return tipo.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '');
+        }
+
+        function filtrarProgramacao(diaSelecionado, botaoClicado) {
+            const container = document.getElementById('conteudo-programacao');
+            if(botaoClicado) {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                botaoClicado.classList.add('active');
+            }
+            container.innerHTML = "";
+            const eventosFiltrados = dadosDoEvento.filter(item => diaSelecionado === 'Geral' || (item.Dia && item.Dia.includes(diaSelecionado)));
+
+            eventosFiltrados.forEach(evento => {
+                const classeTipo = normalizarTipo(evento.Tipo);
+                let htmlDetalhes = evento.Observacoes ? `<details><summary>Ver </summary><div class="detalhes-texto">${evento.Observacoes}</div></details>` : "";
+                let htmlDia = diaSelecionado === 'Geral' ? `<span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px;">📅 ${evento.Dia}</span>` : "";
+
+                container.innerHTML += `
+                    <div class="card tipo-${classeTipo}">
+                        <div class="card-header">
+                            <div>${htmlDia}<span class="card-time">⏰ ${evento.Hora}</span></div>
+                            <span class="card-tag tag-${classeTipo}">${evento.Tipo}</span>
+                        </div>
+                        <div class="card-body">
+                            <h3 style="margin: 0; color: var(--cor-azul)">${evento.Atividade}</h3>
+                            <span class="card-location">📍 ${evento.Local}</span>
+                            ${htmlDetalhes}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS ---
+        function gerarPDF() {
+            const tempArea = document.getElementById('pdf-template');
+            tempArea.style.display = "block"; // Ativa temporariamente para captura
+            
+            // Filtra os dias específicos
+            const dias = ['25/02', '26/02', '27/02'];
+            let colunasHTML = `<div style="text-align:center; margin-bottom:20px;">
+                <h1 style="color:#09747f; margin:0;">II Encontro Nacional Rede Colabora APS</h1>
+                <p>Programação Geral: 25 a 27 de Fevereiro</p>
+            </div>
+            <div class="pdf-grid">`;
+
+            dias.forEach(dia => {
+                const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
+                colunasHTML += `<div class="pdf-col"><h2>${dia}</h2>`;
+                
+                eventosDia.forEach(ev => {
+                    colunasHTML += `
+                        <div class="pdf-item">
+                            <b>${ev.Hora} - ${ev.Tipo}</b>
+                            <p>${ev.Atividade}</p>
+                            <span>📍 ${ev.Local}</span>
+                        </div>`;
+                });
+                colunasHTML += `</div>`;
+            });
+            colunasHTML += `</div>`;
+            
+            tempArea.innerHTML = colunasHTML;
+
+            const opt = {
+                margin:       10,
+                filename:     'Programacao_ColaboraAPS.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(tempArea).save().then(() => {
+                tempArea.style.display = "none"; // Oculta novamente após salvar
+            });
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
