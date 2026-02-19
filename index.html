@@ -315,31 +315,29 @@
             });
         }
 
- // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (COM AGRUPAMENTO DE OFICINAS) ---
+// --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (AJUSTE FINAL DE LAYOUT E HEADER) ---
         function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
             tempArea.style.display = "block"; 
             
             const dias = ['25/02', '26/02', '27/02'];
             
+            // 1. Reduzimos a imagem para 60% (aproximadamente 40% menor do que estava)
             let colunasHTML = `<div style="text-align:center; margin-bottom: 12px;">
-                <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 95%; height: auto;" crossorigin="anonymous">
+                <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 60%; height: auto;" crossorigin="anonymous">
             </div>
-            <div class="pdf-grid" style="gap: 8px;">`;
+            <div class="pdf-grid" style="gap: 8px; box-sizing: border-box; width: 100%;">`;
 
             dias.forEach(dia => {
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
                 
-                // 1. Passo Mágico: Agrupar eventos de mesmo Horário e Tipo
                 const eventosAgrupados = [];
                 let grupoAtual = null;
 
                 eventosDia.forEach(ev => {
-                    // Se o evento for no mesmo horário e do mesmo tipo que o anterior, adicionamos à lista dele
                     if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                         grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
                     } else {
-                        // Se for diferente, guardamos o grupo anterior e começamos um novo
                         if (grupoAtual) eventosAgrupados.push(grupoAtual);
                         grupoAtual = {
                             Hora: ev.Hora,
@@ -348,24 +346,22 @@
                         };
                     }
                 });
-                // Guarda o último grupo que sobrou
                 if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-
-                // 2. Passo: Desenhar o HTML agrupado
-                colunasHTML += `<div class="pdf-col" style="padding: 5px;">
+                // 3. Adicionamos box-sizing e word-break para evitar que o texto vaze ou empurre a coluna
+                colunasHTML += `<div class="pdf-col" style="flex: 1; padding: 5px; box-sizing: border-box; word-break: break-word;">
                     <h2 style="font-size: 13px; margin: 0 0 8px 0; color: var(--cor-verde); border-bottom: 2px solid var(--cor-laranja); padding-bottom: 3px;">${dia}</h2>`;
                 
                 eventosAgrupados.forEach(grupo => {
                     colunasHTML += `
-                        <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #eee;">
+                        <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #eee; box-sizing: border-box;">
                             <b style="font-size: 10px; color: var(--cor-azul); display: block; margin-bottom: 3px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                             
-                    // Lista todas as atividades dentro desse horário
                     grupo.atividades.forEach(ativ => {
+                        // 2. Removemos o "•" antes de ${ativ.Atividade}
                         colunasHTML += `
-                            <p style="font-size: 9.5px; margin: 2px 0 0 0; line-height: 1.15;">• ${ativ.Atividade}</p>
-                            <span style="font-size: 8.5px; color: #666; display: block; margin-bottom: 4px; margin-left: 6px;">📍 ${ativ.Local}</span>`;
+                            <p style="font-size: 9.5px; margin: 2px 0 0 0; line-height: 1.15;">${ativ.Atividade}</p>
+                            <span style="font-size: 8.5px; color: #666; display: block; margin-bottom: 4px; margin-left: 0px;">📍 ${ativ.Local}</span>`;
                     });
                     
                     colunasHTML += `</div>`;
@@ -376,7 +372,6 @@
 
             tempArea.innerHTML = colunasHTML;
 
-            // Opções do PDF (useCORS ativado para o header.png funcionar)
             const opt = {
                 margin:       [4, 4, 4, 4], 
                 filename:     'Programacao_ColaboraAPS.pdf',
