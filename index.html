@@ -319,6 +319,11 @@ function gerarPDF() {
     const tempArea = document.getElementById('pdf-template');
     tempArea.style.display = "block"; 
     
+    // 1. O TRUQUE MÁGICO: Forçamos uma largura bem grande temporariamente!
+    // Isto dá espaço horizontal para o texto esticar, reduzindo a altura das colunas.
+    tempArea.style.width = "1200px";
+    tempArea.style.maxWidth = "none";
+    
     const dias = ['25/02', '26/02', '27/02'];
     const diasComSemana = {
         '25/02': '25/02 (Qua)',
@@ -326,12 +331,11 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 1. Cabeçalho ligeiramente mais pequeno e com margem inferior reduzida (4px)
     let colunasHTML = `
-    <div style="text-align:center; margin-bottom: 4px;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 45%; height: auto;" crossorigin="anonymous">
+    <div style="text-align:center; margin-bottom: 25px;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 70%; height: auto;" crossorigin="anonymous">
     </div>
-    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 4px; width: 100%; align-items: flex-start;">`;
+    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 15px; width: 100%; align-items: stretch;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
@@ -352,24 +356,23 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 2. Padding interno do cartão reduzido para 3px para dar mais espaço útil ao texto
+        // 2. Colunas com fontes muito maiores, já que a base agora é 1200px
         colunasHTML += `
-        <div class="pdf-col" style="flex: 1; max-width: 33.3%; padding: 3px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; box-sizing: border-box; word-wrap: break-word;">
-            <h2 style="font-size: 9px; margin: 0 0 4px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 2px; text-transform: uppercase; text-align: center;">
+        <div class="pdf-col" style="flex: 1; max-width: 33.33%; padding: 12px; background-color: #fcfcfc; border: 2px solid #eaeaea; border-radius: 8px; box-sizing: border-box; word-wrap: break-word;">
+            <h2 style="font-size: 20px; margin: 0 0 12px 0; color: #2E7D32; border-bottom: 3px solid #F57C00; padding-bottom: 6px; text-transform: uppercase; text-align: center;">
                 ${diasComSemana[dia]}
             </h2>`;
         
         eventosAgrupados.forEach(grupo => {
-            // 3. Margens entre os blocos de horário reduzidas ao mínimo essencial
             colunasHTML += `
-                <div class="pdf-item" style="margin-bottom: 3px; padding-bottom: 2px; border-bottom: 1px dashed #e0e0e0;">
-                    <b style="font-size: 8px; color: #1565C0; display: block; margin-bottom: 1px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                <div class="pdf-item" style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
+                    <b style="font-size: 15px; color: #1565C0; display: block; margin-bottom: 4px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                     
             grupo.atividades.forEach(ativ => {
-                // 4. O SEGREDO AQUI: Letra a 7.5px, mas com o entrelinhas a 1.25 (mais confortável)
+                // 3. Aumentámos o entrelinhas (line-height: 1.35) como pediste!
                 colunasHTML += `
-                    <p style="font-size: 7.5px; margin: 0 0 1px 0; line-height: 1.25; color: #333;">${ativ.Atividade}</p>
-                    <span style="font-size: 6.5px; color: #666; display: block; margin-bottom: 2px;">📍 ${ativ.Local}</span>`;
+                    <p style="font-size: 13.5px; margin: 0 0 4px 0; line-height: 1.35; color: #333;">${ativ.Atividade}</p>
+                    <span style="font-size: 11.5px; color: #666; display: block; margin-bottom: 6px;">📍 ${ativ.Local}</span>`;
             });
             
             colunasHTML += `</div>`;
@@ -380,9 +383,9 @@ function gerarPDF() {
 
     tempArea.innerHTML = colunasHTML;
 
-    // 5. Margens da folha no limite da segurança para impressoras (4 milímetros em todos os lados)
+    // 4. Margens generosas (10mm) porque agora o próprio sistema escala tudo
     const opt = {
-        margin: [4, 4, 4, 4], 
+        margin: [10, 10, 10, 10], 
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
@@ -390,7 +393,10 @@ function gerarPDF() {
     };
 
     html2pdf().set(opt).from(tempArea).save().then(() => {
+        // 5. Limpar a formatação para não estragar a tua página web após o download
         tempArea.style.display = "none";
+        tempArea.style.width = ""; 
+        tempArea.style.maxWidth = "";
     });
 }
         carregarDados();
