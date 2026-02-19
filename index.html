@@ -315,35 +315,31 @@
             });
         }
 
-// --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (COM DIAS DA SEMANA) ---
+// --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (FOCO NA REDUÇÃO DE FONTE E MANUTENÇÃO DE ESPAÇOS) ---
         function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
-            tempArea.style.display = "block"; // Ativa temporariamente para captura
+            tempArea.style.display = "block"; 
             
-            // Esta é a lista que usamos para filtrar os dados (não mudamos)
             const dias = ['25/02', '26/02', '27/02'];
             
-            // 1. NOVO: O nosso "dicionário" de mapeamento. 
-            // Ele liga o valor de busca ao texto que queremos mostrar no PDF.
             const diasComSemana = {
                 '25/02': '25/02 (Qua)',
                 '26/02': '26/02 (Qui)',
                 '27/02': '27/02 (Sex)'
             };
             
-            let colunasHTML = `<div style="text-align:center; margin-bottom: 12px;">
-                <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 60%; height: auto;" crossorigin="anonymous">
+            // 1. Cabeçalho mantido a 50%, mas com um respiro maior abaixo (8px)
+            let colunasHTML = `<div style="text-align:center; margin-bottom: 8px;">
+                <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 50%; height: auto;" crossorigin="anonymous">
             </div>
-            <div class="pdf-grid" style="gap: 8px; box-sizing: border-box; width: 100%;">`;
+            <div class="pdf-grid" style="gap: 10px; box-sizing: border-box; width: 100%;">`;
 
             dias.forEach(dia => {
-                // O filtro continua a usar apenas o número (ex: '25/02')
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
                 
                 const eventosAgrupados = [];
                 let grupoAtual = null;
 
-                // Lógica de agrupamento das atividades do mesmo horário
                 eventosDia.forEach(ev => {
                     if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                         grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
@@ -358,20 +354,21 @@
                 });
                 if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-                // 2. ALTERAÇÃO: Aqui substituímos ${dia} por ${diasComSemana[dia]}
-                // O código vai procurar no dicionário qual é o texto correto para imprimir.
+                // 2. Devolvemos um padding mais confortável (5px), mas reduzimos a fonte do dia (11.5px)
                 colunasHTML += `<div class="pdf-col" style="flex: 1; padding: 5px; box-sizing: border-box; word-break: break-word;">
-                    <h2 style="font-size: 13px; margin: 0 0 8px 0; color: var(--cor-verde); border-bottom: 2px solid var(--cor-laranja); padding-bottom: 3px;">${diasComSemana[dia]}</h2>`;
+                    <h2 style="font-size: 11.5px; margin: 0 0 8px 0; color: var(--cor-verde); border-bottom: 2px solid var(--cor-laranja); padding-bottom: 3px;">${diasComSemana[dia]}</h2>`;
                 
                 eventosAgrupados.forEach(grupo => {
+                    // 3. Devolvemos as margens originais (margin-bottom: 6px) para dar respiro entre blocos
                     colunasHTML += `
                         <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #eee; box-sizing: border-box;">
-                            <b style="font-size: 10px; color: var(--cor-azul); display: block; margin-bottom: 3px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                            <b style="font-size: 8.5px; color: var(--cor-azul); display: block; margin-bottom: 3px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                             
                     grupo.atividades.forEach(ativ => {
+                        // 4. Fontes da atividade menores (8px), mas mantendo o espaçamento de leitura (line-height: 1.2)
                         colunasHTML += `
-                            <p style="font-size: 9.5px; margin: 2px 0 0 0; line-height: 1.15;">${ativ.Atividade}</p>
-                            <span style="font-size: 8.5px; color: #666; display: block; margin-bottom: 4px; margin-left: 0px;">📍 ${ativ.Local}</span>`;
+                            <p style="font-size: 8px; margin: 2px 0 0 0; line-height: 1.2;">${ativ.Atividade}</p>
+                            <span style="font-size: 7.5px; color: #666; display: block; margin-bottom: 3px; margin-left: 0px;">📍 ${ativ.Local}</span>`;
                     });
                     
                     colunasHTML += `</div>`;
@@ -382,16 +379,16 @@
 
             tempArea.innerHTML = colunasHTML;
 
-            // Opções do PDF (mantemos a margem inferior para dar espaço de respiro)
+            // 5. Margem do PDF: [topo, direita, baixo, esquerda]
+            // Deixamos 8mm na base para garantir que tem uma margem branca elegante no fundo da folha
             const opt = {
-                margin:       [4, 4, 4, 4], 
+                margin:       [4, 4, 8, 4], 
                 filename:     'Programacao_ColaboraAPS.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            // Geração final do ficheiro
             html2pdf().set(opt).from(tempArea).save().then(() => {
                 tempArea.style.display = "none";
             });
