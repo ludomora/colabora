@@ -326,12 +326,12 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 1. Cabeçalho mais compacto para poupar espaço vertical
+    // 1. Cabeçalho otimizado para a folha em pé
     let colunasHTML = `
-    <div style="text-align:center; margin-bottom: 8px;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 45%; height: auto;" crossorigin="anonymous">
+    <div style="text-align:center; margin-bottom: 10px;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 60%; height: auto;" crossorigin="anonymous">
     </div>
-    <div class="pdf-grid" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">`;
+    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 6px; width: 100%; align-items: flex-start;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
@@ -352,24 +352,24 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 3. Padding (espaço dentro do cartão) reduzido para 8px
+        // 3. Cada coluna agora tem flex: 1 e max-width de 33% para dividir a folha em 3 perfeitamente
+        // word-wrap: break-word evita que palavras longas quebrem o layout da coluna estreita
         colunasHTML += `
-        <div class="pdf-col" style="width: 100%; padding: 8px 12px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 6px; box-sizing: border-box;">
-            <h2 style="font-size: 12px; margin: 0 0 8px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 3px; text-transform: uppercase;">
+        <div class="pdf-col" style="flex: 1; max-width: 33.3%; padding: 4px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; box-sizing: border-box; word-wrap: break-word;">
+            <h2 style="font-size: 10px; margin: 0 0 6px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 2px; text-transform: uppercase; text-align: center;">
                 ${diasComSemana[dia]}
             </h2>`;
         
         eventosAgrupados.forEach(grupo => {
-            // 4. Margens dos itens bastante reduzidas
             colunasHTML += `
-                <div class="pdf-item" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed #e0e0e0;">
-                    <b style="font-size: 10px; color: #1565C0; display: block; margin-bottom: 3px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                <div class="pdf-item" style="margin-bottom: 4px; padding-bottom: 3px; border-bottom: 1px dashed #e0e0e0;">
+                    <b style="font-size: 8.5px; color: #1565C0; display: block; margin-bottom: 2px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                     
             grupo.atividades.forEach(ativ => {
-                // 5. Textos mais compactos e line-height menor (1.15)
+                // 4. Fonte compacta e line-height bem justo (1.1) para caber na vertical
                 colunasHTML += `
-                    <p style="font-size: 9.5px; margin: 0 0 2px 0; line-height: 1.15; color: #333;">${ativ.Atividade}</p>
-                    <span style="font-size: 8px; color: #666; display: block; margin-bottom: 4px;">📍 ${ativ.Local}</span>`;
+                    <p style="font-size: 8px; margin: 0 0 2px 0; line-height: 1.1; color: #333;">${ativ.Atividade}</p>
+                    <span style="font-size: 7px; color: #666; display: block; margin-bottom: 3px;">📍 ${ativ.Local}</span>`;
             });
             
             colunasHTML += `</div>`;
@@ -380,13 +380,13 @@ function gerarPDF() {
 
     tempArea.innerHTML = colunasHTML;
 
-    // 6. Margens do PDF minimizadas [Topo, Direita, Fundo, Esquerda] em milímetros
+    // 5. Configuração para folha em pé (portrait) com margens fininhas
     const opt = {
-        margin: [6, 10, 6, 10], 
+        margin: [8, 6, 8, 6], // Topo, Direita, Fundo, Esquerda em mm
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } // Em pé (vertical)
     };
 
     html2pdf().set(opt).from(tempArea).save().then(() => {
