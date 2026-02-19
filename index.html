@@ -315,7 +315,7 @@
             });
         }
 
-  // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (VERSÃO AJUSTE FINO) ---
+ // --- FUNÇÃO PARA GERAR O PDF EM COLUNAS (COM NOVO CABEÇALHO DE IMAGEM) ---
         function gerarPDF() {
             const tempArea = document.getElementById('pdf-template');
             tempArea.style.display = "block"; // Ativa temporariamente para captura
@@ -323,21 +323,20 @@
             // Filtra os dias específicos
             const dias = ['25/02', '26/02', '27/02'];
             
-            // Cabeçalho mais compacto para economizar espaço vertical
-            let colunasHTML = `<div style="text-align:center; margin-bottom: 8px;">
-                <h1 style="color:#09747f; margin:0; font-size: 16px;">II Encontro Nacional Rede Colabora APS</h1>
-                <p style="margin: 2px 0; font-size: 11px; color: #555;">Programação Geral: 25 a 27 de Fevereiro</p>
+            // Inserimos a sua imagem header.png no lugar dos textos
+            // O crossorigin="anonymous" ajuda a evitar bloqueios do navegador
+            let colunasHTML = `<div style="text-align:center; margin-bottom: 12px;">
+                <img src="header.png" alt="Cabeçalho Colabora APS" style="max-width: 95%; height: auto;" crossorigin="anonymous">
             </div>
-            <div class="pdf-grid" style="gap: 10px;">`;
+            <div class="pdf-grid" style="gap: 8px;">`;
 
             dias.forEach(dia => {
                 const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
-                // Reduzimos um pouco o padding interno da coluna
-                colunasHTML += `<div class="pdf-col" style="padding: 6px;">
-                    <h2 style="font-size: 13px; margin: 0 0 6px 0;">${dia}</h2>`;
+                colunasHTML += `<div class="pdf-col" style="padding: 5px;">
+                    <h2 style="font-size: 13px; margin: 0 0 8px 0;">${dia}</h2>`;
                 
                 eventosDia.forEach(ev => {
-                    // Ajuste fino: Fontes em 10px e margens reduzidas para caber o dia 26
+                    // Mantivemos as fontes compactas e legíveis
                     colunasHTML += `
                         <div class="pdf-item" style="margin-bottom: 4px; padding-bottom: 3px;">
                             <b style="font-size: 9.5px;">${ev.Hora} - ${ev.Tipo}</b>
@@ -348,23 +347,15 @@
                 colunasHTML += `</div>`;
             });
             colunasHTML += `</div>`;
-            
-            // --- INSERÇÃO DA BARRA DE LOGOS ---
-            // Diminuímos a margem superior da imagem para colar mais no conteúdo
-            colunasHTML += `
-            <div style="text-align: center; margin-top: 8px; padding-top: 5px;">
-                <img src="barra_ColaboraAPS.png" alt="Logos Colabora APS" style="max-width: 85%; height: auto;">
-            </div>
-            `;
 
             tempArea.innerHTML = colunasHTML;
 
-            // Opções do PDF: Margens ajustadas (4mm em cima/baixo e 5mm nas laterais)
+            // Opções do PDF: Adicionamos useCORS: true para a imagem funcionar!
             const opt = {
-                margin:       [4, 5, 4, 5], 
+                margin:       [4, 4, 4, 4], 
                 filename:     'Programacao_ColaboraAPS.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
+                html2canvas:  { scale: 2, useCORS: true }, // <--- Este comando faz a mágica da imagem
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
