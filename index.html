@@ -316,40 +316,32 @@
         }
 
 function gerarPDF() {
-    const btnPdf = document.querySelector('button[onclick="gerarPDF()"]');
-    const textoOriginalBtn = btnPdf ? btnPdf.innerText : '';
-    if (btnPdf) btnPdf.innerText = "⏳ Gerando PDF...";
-
-    // 1. Criamos um container fantasma que tem EXATAMENTE o tamanho de um A4 (com as margens descontadas).
-    // O A4 tem 210mm x 297mm. Se vamos usar 5mm de margem no PDF, o tamanho do papel disponível é 200mm x 287mm.
-    const divContainer = document.createElement('div');
-    divContainer.style.position = 'absolute';
-    divContainer.style.left = '-9999px';
-    divContainer.style.top = '0';
-    divContainer.style.width = '200mm';
-    divContainer.style.height = '287mm';
-    divContainer.style.backgroundColor = '#ffffff';
-    divContainer.style.fontFamily = "'Roboto', sans-serif";
-    divContainer.style.boxSizing = 'border-box';
-    divContainer.style.overflow = 'hidden'; // Nada pode escapar desta caixa
-    document.body.appendChild(divContainer);
-
+    const tempArea = document.getElementById('pdf-template');
+    tempArea.style.display = "block"; 
+    
+    // 1. A REGRA DE OURO: Travar o tamanho da "caixa" HTML nas medidas exatas do papel.
+    // Uma folha A4 tem 210mm x 297mm. Vamos usar margens de 5mm, então sobra: 200mm x 287mm.
+    tempArea.style.width = "200mm";
+    tempArea.style.height = "287mm";
+    tempArea.style.boxSizing = "border-box";
+    tempArea.style.overflow = "hidden"; // Proíbe estritamente qualquer coisa de passar da página 1
+    tempArea.style.backgroundColor = "#ffffff";
+    tempArea.style.margin = "0";
+    tempArea.style.padding = "0";
+    
     const dias = ['25/02', '26/02', '27/02'];
     const diasComSemana = {
         '25/02': '25/02 (Qua)',
         '26/02': '26/02 (Qui)',
         '27/02': '27/02 (Sex)'
     };
-
-    // 2. Cabeçalho com tamanho estrito em milímetros
-    let conteudo = `
-        <div style="text-align:center; height: 28mm; margin-bottom: 2mm; box-sizing: border-box;">
-            <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" crossorigin="anonymous" style="max-height: 14mm; width: auto; margin-bottom: 2mm;">
-            <h1 style="color: #09747f; font-size: 14px; margin: 0 0 1px 0; padding: 0;">II Encontro Nacional</h1>
-            <p style="color: #666; font-size: 10px; margin: 0; padding: 0;">Programação Oficial</p>
-        </div>
-        <div style="display: flex; flex-direction: row; gap: 3mm; height: calc(100% - 30mm); align-items: stretch; width: 100%; box-sizing: border-box;">
-    `;
+    
+    // 2. Cabeçalho com altura travada (25mm) para não empurrar o texto para baixo
+    let colunasHTML = `
+    <div style="text-align:center; height: 25mm; margin-bottom: 2mm;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 100%; max-width: 80%; object-fit: contain;" crossorigin="anonymous">
+    </div>
+    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 3mm; height: calc(100% - 27mm); align-items: stretch;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
@@ -370,54 +362,47 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 3. Colunas com medidas precisas e limpas
-        conteudo += `
-            <div style="flex: 1; width: 33.33%; background: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; padding: 2mm; box-sizing: border-box; display: flex; flex-direction: column;">
-                <h2 style="font-size: 11px; color: #025701; text-align: center; border-bottom: 1.5px solid #ff6d00; margin: 0 0 3px 0; padding-bottom: 2px; text-transform: uppercase;">
-                    ${diasComSemana[dia]}
-                </h2>
-                <div style="flex: 1; overflow: hidden;">
-        `;
-
+        // 4. Medidas super justas e fonte ligeiramente condensada (letter-spacing)
+        colunasHTML += `
+        <div class="pdf-col" style="flex: 1; width: 33.33%; padding: 2mm; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 4px; box-sizing: border-box;">
+            <h2 style="font-size: 11px; margin: 0 0 3px 0; color: #2E7D32; border-bottom: 1.5px solid #F57C00; padding-bottom: 2px; text-transform: uppercase; text-align: center;">
+                ${diasComSemana[dia]}
+            </h2>`;
+        
         eventosAgrupados.forEach(grupo => {
-            conteudo += `
-                <div style="margin-bottom: 2.5px; padding-bottom: 2px; border-bottom: 1px dotted #ccc;">
-                    <strong style="display: block; font-size: 8.5px; color: #09747f; margin-bottom: 1.5px;">${grupo.Hora} - ${grupo.Tipo}</strong>
-            `;
-
+            colunasHTML += `
+                <div class="pdf-item" style="margin-bottom: 2.5px; padding-bottom: 2.5px; border-bottom: 1px dotted #ccc;">
+                    <b style="font-size: 8.5px; color: #1565C0; display: block; margin-bottom: 1.5px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                    
             grupo.atividades.forEach(ativ => {
-                conteudo += `
-                    <p style="margin: 0 0 1.5px 0; font-size: 8px; line-height: 1.15; color: #222; letter-spacing: -0.1px; font-weight: bold;">${ativ.Atividade}</p>
-                    <span style="display: block; font-size: 7px; color: #555; margin-bottom: 2px;">📍 ${ativ.Local}</span>
-                `;
+                colunasHTML += `
+                    <p style="font-size: 8px; margin: 0 0 1.5px 0; line-height: 1.15; color: #111; letter-spacing: -0.1px;">${ativ.Atividade}</p>
+                    <span style="font-size: 7px; color: #666; display: block;">📍 ${ativ.Local}</span>`;
             });
-
-            conteudo += `</div>`;
+            
+            colunasHTML += `</div>`;
         });
-
-        conteudo += `</div></div>`;
+        colunasHTML += `</div>`;
     });
+    colunasHTML += `</div>`;
 
-    conteudo += `</div>`;
-    
-    divContainer.innerHTML = conteudo;
+    tempArea.innerHTML = colunasHTML;
 
-    // 4. A configuração do PDF: Escala a 3 para a letra pequena não ficar pixelizada na foto, e margens de 5mm.
+    // 5. PDF com margem cravada em 5mm e escala 3x (para a letra de 8px ficar super nítida)
     const opt = {
-        margin:       [5, 5, 5, 5],
-        filename:     'Programacao_ColaboraAPS.pdf',
-        image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 3, useCORS: true, backgroundColor: '#ffffff', logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        margin: [5, 5, 5, 5], 
+        filename: 'Programacao_ColaboraAPS.pdf',
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { scale: 3, useCORS: true }, 
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
     };
 
-    html2pdf().set(opt).from(divContainer).save().then(() => {
-        document.body.removeChild(divContainer);
-        if (btnPdf) btnPdf.innerText = textoOriginalBtn;
-    }).catch(err => {
-        console.error("Erro ao gerar PDF: ", err);
-        document.body.removeChild(divContainer);
-        if (btnPdf) btnPdf.innerText = textoOriginalBtn;
+    html2pdf().set(opt).from(tempArea).save().then(() => {
+        // 6. Limpeza fundamental para a tua página web voltar ao normal
+        tempArea.style.display = "none";
+        tempArea.style.width = "";
+        tempArea.style.height = "";
+        tempArea.style.overflow = "";
     });
 }
         carregarDados();
