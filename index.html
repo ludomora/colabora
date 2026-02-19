@@ -317,21 +317,16 @@
 
 function gerarPDF() {
     const tempArea = document.getElementById('pdf-template');
-    tempArea.style.display = "block";
-
-    // ✅ FIX 1: Define largura fixa equivalente ao A4 landscape em 96dpi
-    // A4 landscape = 297mm. A 96dpi: 297/25.4*96 ≈ 1122px. Com margens de 5mm cada lado:
-    // área útil ≈ 287mm → ~1085px. Usamos um valor ligeiramente menor para folga.
-    tempArea.style.width = "1080px";
-    tempArea.style.boxSizing = "border-box";
-
+    tempArea.style.display = "block"; 
+    
     const dias = ['25/02', '26/02', '27/02'];
     const diasComSemana = {
         '25/02': '25/02 (Qua)',
         '26/02': '26/02 (Qui)',
         '27/02': '27/02 (Sex)'
     };
-
+    
+    // 1. Reduzi o margin-bottom do cabeçalho para ganhar espaço vertical
     let colunasHTML = `
     <div style="text-align:center; margin-bottom: 4px;">
         <img src="header.png" alt="Cabeçalho" style="max-width: 40%; height: auto;" crossorigin="anonymous">
@@ -357,55 +352,52 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
+        // 2. Padding reduzido e fonte do título do dia mais compacta
         colunasHTML += `
         <div class="pdf-col" style="flex: 1; padding: 2px; box-sizing: border-box; min-width: 0;">
             <h2 style="font-size: 10px; margin: 0 0 5px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 2px; text-transform: uppercase;">
                 ${diasComSemana[dia]}
             </h2>`;
-
+        
         eventosAgrupados.forEach(grupo => {
+            // 3. Redução das margens entre blocos de horário
             colunasHTML += `
                 <div class="pdf-item" style="margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid #eee;">
                     <b style="font-size: 8px; color: #1565C0; display: block; margin-bottom: 1px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
-
+                    
             grupo.atividades.forEach(ativ => {
+                // 4. Line-height mais apertado para evitar quebras de linha longas
                 colunasHTML += `
-                    <p style="font-size: 7.5px; margin: 1px 0; line-height: 1.2; font-weight: 500;">${ativ.Atividade}</p>
+                    <p style="font-size: 7.5px; margin: 1px 0; line-height: 1.1; font-weight: 500;">${ativ.Atividade}</p>
                     <span style="font-size: 7px; color: #666; display: block; margin-bottom: 2px;">📍 ${ativ.Local}</span>`;
             });
-
+            
             colunasHTML += `</div>`;
         });
         colunasHTML += `</div>`;
     });
     colunasHTML += `</div>`;
+
     tempArea.innerHTML = colunasHTML;
 
+    // 5. Ajustes nas opções para forçar o encaixe
     const opt = {
-        margin: [5, 5, 5, 5],
+        margin: [5, 5, 5, 5], // Margens uniformes de 5mm
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-            scale: 2,
+        html2canvas: { 
+            scale: 2, 
             useCORS: true,
             logging: false,
-            letterRendering: true,
-            // ✅ FIX 2: windowWidth deve bater com o width que você definiu no tempArea.
-            // Isso garante que o html2canvas "enxerga" o layout no tamanho certo,
-            // sem re-renderizar para a largura real da janela do browser.
-            windowWidth: 1080
+            letterRendering: true 
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-        // ✅ FIX 3: Removido 'avoid-all' — ele impedia cortes mas não encolhia o conteúdo,
-        // causando o clipamento silencioso. Com width fixo + windowWidth corretos,
-        // o conteúdo cabe naturalmente e não precisa de pagebreak forçado.
-        pagebreak: { mode: ['css', 'legacy'] }
+        // O segredo: isto ajuda a evitar quebras de página indesejadas dentro dos itens
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     html2pdf().set(opt).from(tempArea).save().then(() => {
         tempArea.style.display = "none";
-        // ✅ FIX 4: Limpa o width inline após gerar para não afetar o layout normal da página
-        tempArea.style.width = "";
     });
 }
         carregarDados();
