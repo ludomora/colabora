@@ -326,18 +326,19 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 1. Reduzi o margin-bottom do cabeçalho para ganhar espaço vertical
+    // 1. Cabeçalho com tamanho adequado e margem generosa
     let colunasHTML = `
-    <div style="text-align:center; margin-bottom: 4px;">
-        <img src="header.png" alt="Cabeçalho" style="max-width: 40%; height: auto;" crossorigin="anonymous">
+    <div style="text-align:center; margin-bottom: 20px;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 50%; height: auto;" crossorigin="anonymous">
     </div>
-    <div class="pdf-grid" style="display: flex; gap: 8px; width: 100%; align-items: flex-start;">`;
+    <div class="pdf-grid" style="display: flex; gap: 15px; width: 100%; align-items: stretch; justify-content: center;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
         const eventosAgrupados = [];
         let grupoAtual = null;
 
+        // Agrupamento dos eventos por Hora e Tipo (Mantido)
         eventosDia.forEach(ev => {
             if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                 grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
@@ -352,24 +353,23 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 2. Padding reduzido e fonte do título do dia mais compacta
+        // 2. Colunas com formato de "cartão" (fundo claro, bordas arredondadas e padding)
         colunasHTML += `
-        <div class="pdf-col" style="flex: 1; padding: 2px; box-sizing: border-box; min-width: 0;">
-            <h2 style="font-size: 10px; margin: 0 0 5px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 2px; text-transform: uppercase;">
+        <div class="pdf-col" style="flex: 1; padding: 15px; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 8px; box-sizing: border-box;">
+            <h2 style="font-size: 14px; margin: 0 0 15px 0; color: #2E7D32; border-bottom: 2px solid #F57C00; padding-bottom: 5px; text-transform: uppercase;">
                 ${diasComSemana[dia]}
             </h2>`;
         
         eventosAgrupados.forEach(grupo => {
-            // 3. Redução das margens entre blocos de horário
+            // 3. Blocos de conteúdo com espaçamento e fontes legíveis
             colunasHTML += `
-                <div class="pdf-item" style="margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid #eee;">
-                    <b style="font-size: 8px; color: #1565C0; display: block; margin-bottom: 1px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
+                <div class="pdf-item" style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
+                    <b style="font-size: 11px; color: #1565C0; display: block; margin-bottom: 6px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
                     
             grupo.atividades.forEach(ativ => {
-                // 4. Line-height mais apertado para evitar quebras de linha longas
                 colunasHTML += `
-                    <p style="font-size: 7.5px; margin: 1px 0; line-height: 1.1; font-weight: 500;">${ativ.Atividade}</p>
-                    <span style="font-size: 7px; color: #666; display: block; margin-bottom: 2px;">📍 ${ativ.Local}</span>`;
+                    <p style="font-size: 10px; margin: 0 0 4px 0; line-height: 1.3; color: #333;">${ativ.Atividade}</p>
+                    <span style="font-size: 9px; color: #666; display: block; margin-bottom: 8px;">📍 ${ativ.Local}</span>`;
             });
             
             colunasHTML += `</div>`;
@@ -380,20 +380,15 @@ function gerarPDF() {
 
     tempArea.innerHTML = colunasHTML;
 
-    // 5. Ajustes nas opções para forçar o encaixe
+    // 4. Configuração focada em qualidade de leitura e quebra de página se necessário
     const opt = {
-        margin: [5, 5, 5, 5], // Margens uniformes de 5mm
+        margin: [10, 10, 10, 10], // Margens de 1cm para respirar
         filename: 'Programacao_ColaboraAPS.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true,
-            logging: false,
-            letterRendering: true 
-        },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-        // O segredo: isto ajuda a evitar quebras de página indesejadas dentro dos itens
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        // Deixamos o sistema quebrar a página automaticamente se ficar grande demais
+        pagebreak: { mode: ['css', 'legacy'] } 
     };
 
     html2pdf().set(opt).from(tempArea).save().then(() => {
