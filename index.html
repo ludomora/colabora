@@ -316,32 +316,48 @@
         }
 
 function gerarPDF() {
-    const tempArea = document.getElementById('pdf-template');
-    tempArea.style.display = "block"; 
+    // 1. Botão visual de carregamento (opcional, mas bom UX)
+    const btnPdf = document.querySelector('button[onclick="gerarPDF()"]');
+    const textoOriginalBtn = btnPdf ? btnPdf.innerText : '';
+    if (btnPdf) btnPdf.innerText = "⏳ Gerando PDF...";
+
+    // 2. Criamos um elemento "fantasma" (divContainer) fora do fluxo da página.
+    // Assim, o CSS do teu site não estraga o layout do PDF!
+    const divContainer = document.createElement('div');
     
-    // 1. O TRUQUE MÁGICO: Forçamos uma largura bem grande temporariamente!
-    // Isto dá espaço horizontal para o texto esticar, reduzindo a altura das colunas.
-    tempArea.style.width = "1200px";
-    tempArea.style.maxWidth = "none";
-    
+    // Configurações para forçar o gerador a ler o conteúdo como se fosse um monitor gigante.
+    // Isso evita que o texto esprema verticalmente.
+    divContainer.style.width = "1200px"; 
+    divContainer.style.backgroundColor = "#ffffff";
+    divContainer.style.padding = "20px"; // Margem interna do documento
+    divContainer.style.fontFamily = "'Roboto', sans-serif";
+    divContainer.style.boxSizing = "border-box";
+
     const dias = ['25/02', '26/02', '27/02'];
     const diasComSemana = {
         '25/02': '25/02 (Qua)',
         '26/02': '26/02 (Qui)',
         '27/02': '27/02 (Sex)'
     };
-    
-    let colunasHTML = `
-    <div style="text-align:center; margin-bottom: 25px;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-width: 70%; height: auto;" crossorigin="anonymous">
-    </div>
-    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 15px; width: 100%; align-items: stretch;">`;
+
+    // 3. Montamos o HTML do PDF do zero, com tamanhos de fonte generosos 
+    // (o html2pdf vai reduzir tudo automaticamente para caber no A4)
+    let conteudo = `
+        <div style="text-align:center; margin-bottom: 30px;">
+            <img src="https://colaboraaps.ensp.fiocruz.br/wp-content/uploads/2025/10/source_Logo-ColaboraAPS-Cor.png" 
+                 style="max-width: 60%; height: auto;" crossorigin="anonymous">
+            <h1 style="color: #09747f; font-size: 28px; margin: 15px 0 5px 0;">II Encontro Nacional</h1>
+            <p style="color: #666; font-size: 18px; margin: 0;">Programação Oficial</p>
+        </div>
+        <div style="display: flex; flex-direction: row; gap: 20px; align-items: flex-start; width: 100%;">
+    `;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
         const eventosAgrupados = [];
         let grupoAtual = null;
 
+        // Lógica de agrupamento (intacta)
         eventosDia.forEach(ev => {
             if (grupoAtual && grupoAtual.Hora === ev.Hora && grupoAtual.Tipo === ev.Tipo) {
                 grupoAtual.atividades.push({ Atividade: ev.Atividade, Local: ev.Local });
@@ -356,47 +372,52 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 2. Colunas com fontes muito maiores, já que a base agora é 1200px
-        colunasHTML += `
-        <div class="pdf-col" style="flex: 1; max-width: 33.33%; padding: 12px; background-color: #fcfcfc; border: 2px solid #eaeaea; border-radius: 8px; box-sizing: border-box; word-wrap: break-word;">
-            <h2 style="font-size: 20px; margin: 0 0 12px 0; color: #2E7D32; border-bottom: 3px solid #F57C00; padding-bottom: 6px; text-transform: uppercase; text-align: center;">
-                ${diasComSemana[dia]}
-            </h2>`;
-        
+        // 4. Estilos embutidos à prova de falhas para as colunas
+        conteudo += `
+            <div style="flex: 1; width: 33.33%; background: #f9f9f9; border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; box-sizing: border-box;">
+                <h2 style="font-size: 20px; color: #025701; text-align: center; border-bottom: 3px solid #ff6d00; margin: 0 0 15px 0; padding-bottom: 8px; text-transform: uppercase;">
+                    ${diasComSemana[dia]}
+                </h2>
+        `;
+
         eventosAgrupados.forEach(grupo => {
-            colunasHTML += `
-                <div class="pdf-item" style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
-                    <b style="font-size: 15px; color: #1565C0; display: block; margin-bottom: 4px;">${grupo.Hora} - ${grupo.Tipo}</b>`;
-                    
+            conteudo += `
+                <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #ccc;">
+                    <strong style="display: block; font-size: 14px; color: #09747f; margin-bottom: 5px;">${grupo.Hora} - ${grupo.Tipo}</strong>
+            `;
+
             grupo.atividades.forEach(ativ => {
-                // 3. Aumentámos o entrelinhas (line-height: 1.35) como pediste!
-                colunasHTML += `
-                    <p style="font-size: 13.5px; margin: 0 0 4px 0; line-height: 1.35; color: #333;">${ativ.Atividade}</p>
-                    <span style="font-size: 11.5px; color: #666; display: block; margin-bottom: 6px;">📍 ${ativ.Local}</span>`;
+                // Entrelinhas (line-height) grande para facilitar a leitura!
+                conteudo += `
+                    <p style="margin: 0 0 4px 0; font-size: 13px; line-height: 1.4; color: #222; font-weight: bold;">${ativ.Atividade}</p>
+                    <span style="display: block; font-size: 11px; color: #555; margin-bottom: 8px;">📍 ${ativ.Local}</span>
+                `;
             });
-            
-            colunasHTML += `</div>`;
+
+            conteudo += `</div>`;
         });
-        colunasHTML += `</div>`;
+
+        conteudo += `</div>`;
     });
-    colunasHTML += `</div>`;
 
-    tempArea.innerHTML = colunasHTML;
+    conteudo += `</div>`;
+    
+    // Adicionamos o HTML ao div fantasma
+    divContainer.innerHTML = conteudo;
 
-    // 4. Margens generosas (10mm) porque agora o próprio sistema escala tudo
+    // 5. Opções do PDF: As margens curtas (8mm) com a folha vertical.
+    // A mágica: não definimos scale no html2canvas; deixamos o html2pdf encaixar a largura de 1200px nos 210mm do A4!
     const opt = {
-        margin: [10, 10, 10, 10], 
-        filename: 'Programacao_ColaboraAPS.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        margin:       [8, 8, 8, 8],
+        filename:     'Programacao_ColaboraAPS.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(tempArea).save().then(() => {
-        // 5. Limpar a formatação para não estragar a tua página web após o download
-        tempArea.style.display = "none";
-        tempArea.style.width = ""; 
-        tempArea.style.maxWidth = "";
+    // 6. Geramos o PDF a partir do nosso elemento limpo e isolado
+    html2pdf().set(opt).from(divContainer).save().then(() => {
+        if (btnPdf) btnPdf.innerText = textoOriginalBtn; // Restaura o texto do botão
     });
 }
         carregarDados();
