@@ -335,12 +335,16 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 2. Novo cabeçalho! Agora com a imagem e a morada empilhadas (flex-direction: column)
-    // Aumentámos a altura para 35mm para acomodar tudo com elegância.
+    // 2. Novo Layout de Cabeçalho: Logo -> Linha -> Endereço
     let colunasHTML = `
-    <div style="text-align:center; height: 35mm; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 3mm;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 65%; max-width: 85%; object-fit: contain;" crossorigin="anonymous">
-        <p style="font-size: 10px; font-weight: bold; color: #1e5631; margin: 4px 0 0 0; line-height: 1.3;">
+    <div style="text-align:center; height: 22mm; display: flex; align-items: center; justify-content: center;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 95%; max-width: 85%; object-fit: contain;" crossorigin="anonymous">
+    </div>
+    
+    <div style="height: 1.5px; background-color: #ff6d00; width: 100%; margin: 1.5mm 0; border-radius: 2px;"></div>
+    
+    <div style="text-align:center; height: 10mm; display: flex; align-items: center; justify-content: center; margin-bottom: 2mm;">
+        <p style="font-size: 10px; font-weight: bold; color: #1e5631; margin: 0; line-height: 1.3;">
             📍 Rua Ferreira Viana, 81, Flamengo - Rio de Janeiro <br>
             <span style="font-weight: normal; font-size: 9px; color: #7f8c8d;">(Windsor Flórida Hotel, 1º andar)</span>
         </p>
