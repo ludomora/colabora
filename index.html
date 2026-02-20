@@ -335,12 +335,18 @@ function gerarPDF() {
         '27/02': '27/02 (Sex)'
     };
     
-    // 2. Cabeçalho ainda maior (30mm de altura) e ajuste no cálculo do grid (33mm para compensar a margem)
+    // 2. Novo cabeçalho! Agora com a imagem e a morada empilhadas (flex-direction: column)
+    // Aumentámos a altura para 35mm para acomodar tudo com elegância.
     let colunasHTML = `
-    <div style="text-align:center; height: 30mm; display: flex; align-items: center; justify-content: center; margin-bottom: 3mm;">
-        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 95%; max-width: 85%; object-fit: contain;" crossorigin="anonymous">
+    <div style="text-align:center; height: 35mm; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 3mm;">
+        <img src="header.png" alt="Cabeçalho ColaboraAPS" style="max-height: 65%; max-width: 85%; object-fit: contain;" crossorigin="anonymous">
+        <p style="font-size: 10px; font-weight: bold; color: #1e5631; margin: 4px 0 0 0; line-height: 1.3;">
+            📍 Rua Ferreira Viana, 81, Flamengo - Rio de Janeiro <br>
+            <span style="font-weight: normal; font-size: 9px; color: #7f8c8d;">(Windsor Flórida Hotel, 1º andar)</span>
+        </p>
     </div>
-    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 4mm; height: calc(100% - 33mm); align-items: stretch;">`;
+    
+    <div class="pdf-grid" style="display: flex; flex-direction: row; gap: 4mm; height: calc(100% - 38mm); align-items: stretch;">`;
 
     dias.forEach(dia => {
         const eventosDia = dadosDoEvento.filter(item => item.Dia && item.Dia.includes(dia));
@@ -361,7 +367,6 @@ function gerarPDF() {
         });
         if (grupoAtual) eventosAgrupados.push(grupoAtual);
 
-        // 3. Título do dia maior (13.5px)
         colunasHTML += `
         <div class="pdf-col" style="flex: 1; width: 33.33%; padding: 3mm 2.5mm; background-color: #f9fbfb; border: 1px solid #e0e6ed; border-radius: 6px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2.5mm;">
             <h2 style="font-size: 13.5px; margin: 0; color: #1e5631; border-bottom: 2px solid #e67e22; padding-bottom: 3px; text-transform: uppercase; text-align: center; letter-spacing: 0.5px;">
@@ -373,7 +378,6 @@ function gerarPDF() {
             const isLast = index === eventosAgrupados.length - 1;
             const borderStyle = isLast ? 'none' : '1px solid #dcdde1';
 
-            // 4. Horário maior (11px)
             colunasHTML += `
                 <div class="pdf-item" style="padding-bottom: 2.5mm; border-bottom: ${borderStyle};">
                     <b style="font-size: 11px; color: #2980b9; display: block; margin-bottom: 3px; text-transform: capitalize;">${grupo.Hora} - ${grupo.Tipo}</b>`;
@@ -382,7 +386,6 @@ function gerarPDF() {
                 const isLastAtiv = ativIndex === grupo.atividades.length - 1;
                 const margemInferior = isLastAtiv ? '0' : '1.8mm';
 
-                // 5. Atividade (10.5px) e Local (9.5px) - Super legíveis agora!
                 colunasHTML += `
                     <div style="margin-bottom: ${margemInferior};">
                         <p style="font-size: 10.5px; margin: 0 0 1.5px 0; line-height: 1.3; color: #2c3e50; font-weight: 500;">${ativ.Atividade}</p>
